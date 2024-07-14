@@ -19,51 +19,44 @@ export default function DashBoard() {
     const getAdminToken = jwt.decode(adminToken) as JwtPayload | null
 
     useEffect(() => {
-        // const checkAuthentication = async () => {
-        //     if (!adminToken) {
-        //         setIsModalOpen(true)
-        //         return
-        //     }
-            const checkTokenExpiration = async () => {
-                try {
-                    const tokenResponse = await fetch('/api/admin/check-token', { credentials: 'include' });
-                    if (!tokenResponse.ok) {
-                        toast.error('Network response was not ok')
-                    }
-
-                    const tokenResult = await tokenResponse.json()
-                    if (tokenResult.tokenExpired) {
-                        setIsModalOpen(true)
-                    } else {
-                        setIsAuthenticated(true)
-                    }
-                } catch (err) {
-                    setIsModalOpen(true)
+        const checkTokenExpiration = async () => {
+            try {
+                const tokenResponse = await fetch('/api/admin/check-token', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                console.log(tokenResponse);
+                if (!tokenResponse.ok) {
+                    toast.error('Session expired')
                 }
-            }
 
-                if (adminToken) {
-                    checkTokenExpiration()
+                const tokenResult = await tokenResponse.json()
+                console.log(tokenResult);
+                if (tokenResult.tokenExpired) {
+                    setIsModalOpen(true)
                 } else {
-                    setIsModalOpen(true)
+                    setIsAuthenticated(true)
                 }
-        //     };
+            } catch (err) {
+                setIsModalOpen(true)
+            }
+        }
 
-        //     checkTokenExpiration();
-        // }
-        // checkAuthentication()
-    }, [])
+        if (adminToken) {
+            checkTokenExpiration()
+        } else {
+            setIsModalOpen(true)
+        }
 
-    // useEffect(() => {
-    //     const checkTokenExpiration = async () => {
-    //         const response = await fetch('/admin/dashboard');
-    //         if (response.headers.get('token-expired') === 'true') {
-    //             setIsModalOpen(true);
-    //         }
-    //     };
+        // const interval = setInterval(() => {
+        //     checkTokenExpiration()
+        // }, 1000)
 
-    //     checkTokenExpiration();
-    // }, []);
+        // return () => clearInterval(interval)
+    }, [adminToken])
 
     return (
         <>
@@ -74,6 +67,5 @@ export default function DashBoard() {
                 <ShowExpiryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             )}
         </>
-        // <Image src='/bookIssueHubIcon1.svg' alt='icon' width="200" height="200" />
     )
 }

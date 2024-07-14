@@ -28,10 +28,10 @@ export async function POST(req: NextRequest) {
         }
 
         const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY || ""
-        const token = jwt.sign({ id: isAdminPresent._id.toString() }, SECRET_KEY, { expiresIn: '20s' })
+        const token = jwt.sign({ id: isAdminPresent._id.toString() }, SECRET_KEY, { expiresIn: '1h' })
 
         const response = NextResponse.json({ success: true, message: 'Admin login successfully' }, { status: 200 })
-        response.cookies.set('adminToken', token, { maxAge: 20, path: '/', sameSite: 'strict' })
+        response.cookies.set('adminToken', token, { maxAge: 3600, path: '/', sameSite: 'strict' })
 
         return response
     } catch (error) {
