@@ -6,6 +6,7 @@ export async function GET(req: NextRequest) {
         const cookies = req.cookies.get('adminToken')?.value
         const adminToken = cookies?.toString()
 
+
         if (!adminToken) {
             return NextResponse.json({ message: 'Token not found', tokenExpired: true }, { status: 401 });
         }

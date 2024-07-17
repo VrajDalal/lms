@@ -18,8 +18,8 @@ const ShowExpiryModal: React.FC<ShowExpiryModalProps> = ({ isOpen }) => {
 
   return (
     <>
-      <div className="fixed inset-0 text-xl bg-black bg-opacity-50 flex justify-center items-center p-4">
-        <div className="bg-white p-6 rounded-lg shadow-2xl shadow-slate-950">
+      <div className="fixed inset-0 flex justify-center items-center p-4 z-50 backdrop-filter backdrop-blur-sm">
+        <div className="bg-white p-6 rounded-lg shadow-2xl shadow-slate-950 w-full max-w-md">
           <h2 className="text-xl font-bold mb-4">Session Expired</h2>
           <p className="mb-4">Your session has expired. Please log in again.</p>
           <div className="flex justify-end">
