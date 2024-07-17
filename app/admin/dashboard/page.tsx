@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Loader, LogOut } from "lucide-react"
+import AddStudents from '../addstudents/page'
 
 export default function DashBoard() {
     const router = useRouter()
@@ -93,27 +94,33 @@ export default function DashBoard() {
         <>
             <title>Dashboard</title>
             {isAuthenticated ? (
-                <nav className={`sticky top-0 z-50 px-1 py-2 border-2 flex items-center justify-between bg-white bg-opacity-70 transition ${isScrolled ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}>
-                    <div className="p-2">
-                        <h1 onClick={() => handleViewChange('dashboard')} className="text-2xl font-bold cursor-pointer">Book Issue Hub</h1>
+                <>
+                    <nav className={`sticky top-0 z-50 px-1 py-2 border-2 flex items-center justify-between bg-white bg-opacity-70 transition ${isScrolled ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}>
+                        <div className="p-2">
+                            <h1 onClick={() => handleViewChange('dashboard')} className="text-2xl font-bold cursor-pointer">Book Issue Hub</h1>
+                        </div>
+                        <div className="flex items-center">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Avatar className='cursor-pointer'>
+                                        <AvatarImage src='/user-stroke-rounded.svg' className='border-4 border-white' />
+                                        {/* <AvatarFallback>CN</AvatarFallback> */}
+                                    </Avatar>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-56">
+                                    <DropdownMenuItem className='cursor-pointer' onClick={handleLogout}>
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Log out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </nav>
+
+                    <div className='ml-64 p-4'>
+                        <AddStudents />
                     </div>
-                    <div className="flex items-center">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Avatar className='cursor-pointer'>
-                                    <AvatarImage src='/user-stroke-rounded.svg' className='border-4 border-white' />
-                                    {/* <AvatarFallback>CN</AvatarFallback> */}
-                                </Avatar>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56">
-                                <DropdownMenuItem className='cursor-pointer' onClick={handleLogout}>
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    Log out
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </nav>
+                </>
             ) : (
                 <ShowExpiryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             )}
