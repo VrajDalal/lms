@@ -67,3 +67,27 @@
       @apply bg-background text-foreground;
     }
   }
+
+  .sticky {
+    position: sticky;
+    top: 0;
+  }
+  
+  .fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+  
+  .backdrop-blur-none {
+    backdrop-filter: none;
+  }
+  
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+  }
+  
+  input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
