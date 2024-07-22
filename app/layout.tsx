@@ -8,9 +8,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Book Issue Hub",
   description: "use this platform for issue the books from library",
-  icons:{
-    shortcut:{
-      url:'/favicon.ico',
+  icons: {
+    shortcut: {
+      url: '/favicon.ico',
       type: 'image/x-icon'
     }
   }

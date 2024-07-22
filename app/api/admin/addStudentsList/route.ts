@@ -52,11 +52,12 @@ export async function POST(req: NextRequest) {
         const dir = path.join(process.cwd(), 'public', 'Students-list', adminId)
         await fs.mkdir(dir, { recursive: true })
 
-        const filePath = path.join(dir, file.name)
-        const buffer = Buffer.from(await file.arrayBuffer())
-        await fs.writeFile(filePath, buffer)
+        const filePath = path.join(dir, file.name);
+        const arrayBuffer = await file.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        await fs.writeFile(filePath, uint8Array);
 
-        const workBook = XLSX.read(buffer, { type: 'buffer' })
+        const workBook = XLSX.read(uint8Array, { type: 'buffer' })
         const sheetName = workBook.SheetNames[0]
         const sheet = workBook.Sheets[sheetName]
         const excelData = XLSX.utils.sheet_to_json<IAddStudentsList>(sheet)
