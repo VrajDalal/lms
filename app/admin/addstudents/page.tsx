@@ -59,8 +59,8 @@ export default function AddStudents() {
         <>
             <title>Add Students</title>
             <Dashboard />
-            <div className='flex flex-col ml-64 p-4 h-screen'>
-                <div className="text-5xl font-bold">
+            <div className='flex flex-col pl-20  md:pl-24 lg:pl-64 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
+                <div className="text-5xl font-bold mt-2">
                     <h1>Enter Students Details</h1>
                 </div>
                 <br />
@@ -84,7 +84,7 @@ export default function AddStudents() {
                         </div>
                     </div>
 
-                    <div className="text-xl mt-4">
+                    {/* <div className="text-xl mt-4">
                         <label htmlFor="manualyAddStudent">Add Student Manualy</label>
                         <div className="p-4">
                             <label htmlFor="manualyAddStudent" className="flex flex-col items-center p-12 border border-gray-300 rounded-lg cursor-pointer w-1/3 text-lg mt-4">
@@ -94,7 +94,7 @@ export default function AddStudents() {
                                 </svg>
                             </label>
                         </div>
-                    </div>
+                    </div> */}
                 </form>
             </div>
         </>

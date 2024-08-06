@@ -5,17 +5,11 @@ export function middleware(req: NextRequest) {
     const adminToken = req.cookies.get('adminToken')?.value
     const url = req.nextUrl.pathname
 
-    // if (url.startsWith('/admin/dashboard')) {
-    //     if (!adminToken) {
-    //         return NextResponse.redirect(new URL('/admin/login', req.url))
-    //     }
-    //     const isTokenExpired = checkTokenExpired(adminToken)
-    //     if (isTokenExpired) {
-    //         const response = NextResponse.redirect(new URL('/admin/login', req.url))
-    //         response.cookies.delete('adminToken')
-    //         return response
-    //     }
-    // }
+    if (url.startsWith('/admin/dashboard')) {
+        if (!adminToken) {
+            return NextResponse.redirect(new URL('/admin/login', req.url))
+        }
+    }
 
     return NextResponse.next()
 }

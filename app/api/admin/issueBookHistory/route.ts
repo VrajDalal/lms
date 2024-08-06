@@ -1,21 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/app/utils/mongo";
-import StudentsIssueBooks from "@/lib/models/admin/studentsIssueBook.model";
-
+import StudentsIssueBooksHistory from "@/lib/models/admin/studentsIssueBookHistory.model";
 export async function GET() {
-
-    await connect()
+    await connect();
 
     try {
-        const isPresentStudentsIssueBooks = await StudentsIssueBooks.find({})
+        const studentIssueBooks = await StudentsIssueBooksHistory.find({}).lean();
 
-        const StudentsIssueBooksDetails = []
-        for (const data of isPresentStudentsIssueBooks) {
-            const datas = data
-            StudentsIssueBooksDetails.push(datas)
-        }
-        return NextResponse.json({ success: true, message: 'Student issue book history successfully shows', datas: StudentsIssueBooksDetails }, { status: 200 })
+        return NextResponse.json({ success: true, message: 'Student issue book history successfully retrieved', datas: studentIssueBooks }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ success: false, message: 'Method not found' }, { status: 500 })
+        console.error('Error fetching student issue books:', error);
+        return NextResponse.json({ success: false, message: 'Error retrieving student issue book history' }, { status: 500 }
+        );
     }
 }

@@ -7,7 +7,7 @@ interface IBookIssue {
     returnDate: string,
 }
 
-interface IStudentsIssueBooks {
+interface IStudentsIssueBooksHistory {
     adminObjectId: mongoose.Schema.Types.ObjectId,
     studentObjectId: mongoose.Schema.Types.ObjectId,
     sid: number,
@@ -23,7 +23,7 @@ interface IStudentsIssueBooks {
     createdAt: Date
 }
 
-const StudentsIssueBooksSchema = new mongoose.Schema<IStudentsIssueBooks>({
+const StudentsIssueBooksHistorySchema = new mongoose.Schema<IStudentsIssueBooksHistory>({
     adminObjectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin',
@@ -99,6 +99,6 @@ const StudentsIssueBooksSchema = new mongoose.Schema<IStudentsIssueBooks>({
     }
 })
 
-const StudentsIssueBooks = mongoose.models.StudentsIssueBooks || mongoose.model<IStudentsIssueBooks>('StudentsIssueBooks', StudentsIssueBooksSchema)
+const StudentsIssueBooksHistory = mongoose.models.StudentsIssueBooksHistory || mongoose.model<IStudentsIssueBooksHistory>('StudentsIssueBooksHistory', StudentsIssueBooksHistorySchema)
 
-export default StudentsIssueBooks
+export default StudentsIssueBooksHistory
