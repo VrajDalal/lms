@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import Dashboard from "@/app/admin/dashboard/page"
 import ShowSuccessGif from '@/app/component/showSuccessGif/page'
+
 interface IStudentDetails {
     sid: number;
     enrollmentNo: string;
@@ -46,6 +47,7 @@ export default function IssueBook() {
     const [isBookAdded, setIsBookAdded] = useState(false);
     const [newIssueBookIndex, setNewIssueBookIndex] = useState<number | null>(null)
     const [isRenewalBookDetailsIndex, setIsRenewalBookDetailsIndex] = useState<number | null>(null)
+    const [bookIssuedDone, setBookIssuedDone] = useState(false)
 
     const handleSearchStudentId = async (studentId: string) => {
 
@@ -87,28 +89,28 @@ export default function IssueBook() {
     }
 
     const handleBookIssue = async (e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
 
         if (!isBookAdded) {
-            toast.info("Please add a new book before issuing.")
+            toast.info("Please add a new book before issuing.");
             return;
         }
 
         if (bookIssues.length === 0) {
-            toast.info("Please add a new book before issuing.")
+            toast.info("Please add a new book before issuing.");
             return;
         }
 
         for (let issue of bookIssues) {
             if (!issue.bookNo || !issue.bookIssueDate || !issue.bookName || !issue.returnDate) {
-                toast.error('Please fill all book issue details')
+                toast.error('Please fill all book issue details');
                 return;
             }
         }
 
         if (!studentDetails) {
-            toast.error('No student details found')
-            return
+            toast.error('No student details found');
+            return;
         }
 
         const issueDetails = bookIssues.map(bookIssue => ({
@@ -121,8 +123,8 @@ export default function IssueBook() {
         // Validate dates
         for (let detail of issueDetails) {
             if (!isValid(parseISO(detail.bookIssueDate)) || (detail.returnDate && !isValid(parseISO(detail.returnDate)))) {
-                toast.error('Invalid date format')
-                return
+                toast.error('Invalid date format');
+                return;
             }
         }
 
@@ -132,23 +134,50 @@ export default function IssueBook() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...studentDetails, IssueDetails: issueDetails }),
                 credentials: 'include'
-            })
-            const issueBookResult = await issueBookResponse.json()
+            });
+            const issueBookResult = await issueBookResponse.json();
 
             if (issueBookResult.success) {
-                toast.success('Book issued successfully')
-                setShowSuccessGif(true)
-                setBookIssues([{ bookNo: '', bookIssueDate: new Date(), bookName: '', returnDate: new Date(new Date().setDate(new Date().getDate() + 7)) }])
-                setInputFilled(false) // Reset input filled state
-                setTimeout(() => setShowSuccessGif(false), 3000)
-                await handleSearchStudentId(searchStudentId)
-                setAddNewBookIssueBtn(false)
-                setShowContent(true);
+                const studentBookIssueDetails = issueDetails.map(detail => `
+                    Book Acc No: <b>${detail.bookNo}</b><br>
+                    Book Name: <b>${detail.bookName}</b><br>
+                    Issue Date: <b>${detail.bookIssueDate}</b><br>
+                    Return Date: <b>${detail.returnDate}</b><br>
+                `).join('<br>');
+
+                const studentIssueBookMailResponse = await fetch('/api/admin/issueBook-send-mail', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentEmail: studentDetails.studentEmail,
+                        studentName: studentDetails.studentName,
+                        bookDetails: studentBookIssueDetails
+                    }),
+                    credentials: 'include'
+                });
+
+                const studentIssueBookMailResult = await studentIssueBookMailResponse.json();
+                if (studentIssueBookMailResult.success) {
+                    toast.success('Book issued successfully');
+                    setShowSuccessGif(true);
+                    setBookIssues([{ bookNo: '', bookIssueDate: new Date(), bookName: '', returnDate: new Date(new Date().setDate(new Date().getDate() + 7)) }]);
+                    setInputFilled(false); // Reset input filled state
+                    setTimeout(() => setShowSuccessGif(false), 3000);
+                    await handleSearchStudentId(searchStudentId);
+                    setAddNewBookIssueBtn(false);
+                    setShowContent(true);
+                    setBookIssuedDone(true);
+                    setNewIssueBookIndex(null);
+                } else {
+                    toast.error('Failed to send email');
+                }
             } else {
-                toast.error('Failed to issue book')
+                toast.error('Failed to issue book');
             }
         } catch (error) {
-            toast.error('An error occurred while issuing the book')
+            toast.error('An error occurred while issuing the book');
         }
     }
 
@@ -209,22 +238,18 @@ export default function IssueBook() {
 
     const handleRenewalSaveClick = async (index: any, sid: number) => {
 
-        console.log('Index:', index);
-        console.log('Book Issues:', bookIssues);
-
-        const updateBookIssueDetails = bookIssues[index]
-        console.log(updateBookIssueDetails);
+        const updatedBookIssueDetails = bookIssues[index]
         try {
 
-            const updateBookIssueDetailsRespose = await fetch(`/api/admin/renewalBookIssueDetails/${sid}/${updateBookIssueDetails.bookNo}`, {
+            const updateBookIssueDetailsRespose = await fetch(`/api/admin/renewalBookIssueDetails/${sid}/${updatedBookIssueDetails.bookNo}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    bookNo: updateBookIssueDetails.bookNo,
-                    bookIssueDate: format(updateBookIssueDetails.bookIssueDate, "yyyy-MM-dd"),
-                    returnDate: format(updateBookIssueDetails.returnDate, "yyyy-MM-dd")
+                    bookNo: updatedBookIssueDetails.bookNo,
+                    bookIssueDate: format(updatedBookIssueDetails.bookIssueDate, "yyyy-MM-dd"),
+                    returnDate: format(updatedBookIssueDetails.returnDate, "yyyy-MM-dd")
                 }),
                 credentials: 'include'
             })
@@ -234,8 +259,36 @@ export default function IssueBook() {
             const updateBookIssueDetailsResult = await updateBookIssueDetailsRespose.json()
             console.log(updateBookIssueDetailsResult);
             if (updateBookIssueDetailsResult.success) {
-                toast.success('Renewal Done Successfully')
-                await handleSearchStudentId(searchStudentId)
+                const renewedBookDetails = `
+                Book Acc No: <b>${updatedBookIssueDetails.bookNo}</b><br>
+                Book Name: <b>${updatedBookIssueDetails.bookName}</b><br>
+                Issue Date: <b>${format(updatedBookIssueDetails.bookIssueDate, "yyyy-MM-dd")}</b><br>
+                Return Date: <b>${format(updatedBookIssueDetails.returnDate, "yyyy-MM-dd")}</b><br>
+                `
+
+                const renewedBookIssueDetailsResponse = await fetch('/api/admin/renewalBook-send-mail', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentEmail: studentDetails?.studentEmail,
+                        studentName: studentDetails?.studentName,
+                        bookDetails: renewedBookDetails
+                    }),
+                    credentials: 'include'
+                })
+
+                const renewedBookIssueDetailsResult = await renewedBookIssueDetailsResponse.json()
+                if (renewedBookIssueDetailsResult.success) {
+                    toast.success('Renewal done successfully')
+                    await handleSearchStudentId(searchStudentId)
+                    setBookIssuedDone(true)
+                    setNewIssueBookIndex(null)
+                } else {
+                    toast.success('Renewal done successfully mail not send')
+                }
+
             } else {
                 toast.error('Error at the renewal time')
             }
@@ -256,15 +309,39 @@ export default function IssueBook() {
             })
             const deleteStudentBookIssueResult = await deleteStudentBookIssueResponse.json()
             if (deleteStudentBookIssueResult.success) {
-                const deletedBookName = deleteStudentBookIssueResult.deletedBookName
-                toast.success(`"${deletedBookName}" book details deleted`)
-                // setShowSuccessGif(true)
-                setBookIssues(prevIssues => prevIssues.filter(issue => issue.bookNo !== bookNo))
-                // setTimeout(() => setShowSuccessGif(false), 3000)
+                const deletedIssedBook = deleteStudentBookIssueResult.deletedBookDetails
+
+                const deletedBookDetails = `
+                Book Acc No:   <b>${deletedIssedBook.bookNo}</b><br>
+                Book Name:     <b>${deletedIssedBook.bookName}</b><br>
+                Issue Date:    <b>${deletedIssedBook.bookIssueDate}</b><br>
+                Return Date:   <b>${deletedIssedBook.returnDate}</b><br>
+                `
+                const deleteBookIssuedDetailResponse = await fetch('/api/admin/deleteIssuedBook-send-mail', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentEmail: studentDetails?.studentEmail,
+                        studentName: studentDetails?.studentName,
+                        bookDetails: deletedBookDetails
+                    }),
+                    credentials: 'include'
+                })
+
+                const deleteBookIssuedDetailResult = await deleteBookIssuedDetailResponse.json()
+                if (deleteBookIssuedDetailResult.success) {
+                    toast.success(`"${deletedIssedBook?.bookName}" book details deleted`)
+                    // setShowSuccessGif(true)
+                    setBookIssues(prevIssues => prevIssues.filter(issue => issue.bookNo !== bookNo))
+                    // setTimeout(() => setShowSuccessGif(false), 3000)
+                } else {
+                    toast.success('Issued book deleted but mail not send')
+                }
             } else {
                 toast.error("Not deleting issued book")
             }
-            //function calling pending
         } catch (error) {
             console.error('Error deleting book issue:', error);
             toast.error("Error in deleting issued book")
@@ -276,9 +353,9 @@ export default function IssueBook() {
     //update function pending : Done
     //on click of renewal svg renewthe data according to there id show cancel button also texbox not disable use something diffrent : Done
     //patch method pending to create : Done
-    //upload book detials excel
-    //mail integration pending
+    //upload book detials excel 
     //write book name and automatically it insert the bookNo
+    //mail integration pending : Done
     //when i click on renewal svg then swap the date of both table : Done
     //data store in issuebook table but not inserted in history table : Done
     return (

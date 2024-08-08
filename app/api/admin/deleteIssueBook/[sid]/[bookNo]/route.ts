@@ -33,12 +33,12 @@ export async function DELETE(req: NextRequest, { params }: { params: { sid: numb
 
         if (updatedIssueDetails.length === 0) {
             await StudentsIssueBooks.deleteOne({ sid });
-            return NextResponse.json({ success: true, message: 'All book issues deleted, student data also deleted' }, { status: 200 });
+            return NextResponse.json({ success: true, message: 'All book issues deleted, student data also deleted', deletedBookDetails: issueToDelete }, { status: 200 });
         } else {
             isPresentStudentBookIssueDetails.IssueDetails = updatedIssueDetails;
             await isPresentStudentBookIssueDetails.save();
 
-            return NextResponse.json({ success: true, message: 'Book issue deleted successfully', deletedBookName: issueToDelete.bookName }, { status: 200 });
+            return NextResponse.json({ success: true, message: 'Book issue deleted successfully', deletedBookDetails: issueToDelete }, { status: 200 });
         }
     } catch (error) {
         console.error(error);

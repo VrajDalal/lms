@@ -14,13 +14,11 @@ import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
 import { Pagination, Autoplay, Navigation } from "swiper/modules";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; //eye icon on password
-import Loading from "@/app/loading";
 
 export default function Admin() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     // useAuth()
@@ -29,7 +27,6 @@ export default function Admin() {
         try {
             if (!username || !password) {
                 toast.info("Username and password are mandatory");
-                setIsLoading(false)
                 return;
             }
 
@@ -50,8 +47,6 @@ export default function Admin() {
             }
         } catch (error) {
             toast.error("Authentication failed");
-        } finally {
-            setIsLoading(false)
         }
     };
 
@@ -72,7 +67,6 @@ export default function Admin() {
     return (
         <>
             <title>Book Issue Hub</title>
-            {isLoading && <Loading />}
             <div className="flex flex-col md:flex-row min-h-screen overflow-hidden">
                 <div className="flex justify-center items-center w-full md:w-1/2 h-full">
                     <Swiper

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
 import { connect } from "@/app/utils/mongo";
 import AddStudentsList from "@/lib/models/admin/addStudents.model";
 import StudentsIssueBooks from "@/lib/models/admin/studentsIssueBook.model";
@@ -38,40 +37,16 @@ export async function POST(req: NextRequest) {
             };
         });
 
-        const existingRecord = await StudentsIssueBooks.findOne({ sid });
+        const existingIssueRecord = await StudentsIssueBooks.findOne({ sid });
 
-        if (existingRecord) {
+        if (existingIssueRecord) {
             const newBooks = formattedIssueDetails.filter((newBook: any) =>
-                !existingRecord.IssueDetails.some((existingBook: any) => existingBook.bookNo === newBook.bookNo)
+                !existingIssueRecord.IssueDetails.some((existingBook: any) => existingBook.bookNo === newBook.bookNo)
             );
-            existingRecord.IssueDetails.push(...newBooks);
-            await existingRecord.save();
-
-            // Update the history collection with the new books
-            const existingHistoryRecord = await StudentsIssueBooksHistory.findOne({ sid });
-            if (existingHistoryRecord) {
-                existingHistoryRecord.IssueDetails.push(...newBooks);
-                await existingHistoryRecord.save();
-            } else {
-                await StudentsIssueBooksHistory.create({
-                    adminObjectId: studentObjectId.adminId,
-                    studentObjectId: studentObjectId._id,
-                    sid,
-                    enrollmentNo,
-                    studentRollNo,
-                    studentName,
-                    studentEmail,
-                    studentMobileNo,
-                    studentCource,
-                    studentYear,
-                    studentDiv,
-                    IssueDetails: newBooks,
-                });
-            }
-
-            return NextResponse.json({ success: true, message: 'Book issued successfully', studentBookIssueDetails: existingRecord }, { status: 200 });
+            existingIssueRecord.IssueDetails.push(...newBooks);
+            await existingIssueRecord.save();
         } else {
-            const studentBookIssueDetails = await StudentsIssueBooks.create({
+            await StudentsIssueBooks.create({
                 adminObjectId: studentObjectId.adminId,
                 studentObjectId: studentObjectId._id,
                 sid,
@@ -85,23 +60,36 @@ export async function POST(req: NextRequest) {
                 studentDiv,
                 IssueDetails: formattedIssueDetails,
             });
-
-            const studentBookIssueHistoryDetails = await StudentsIssueBooksHistory.create({
-                adminObjectId: studentObjectId.adminId,
-                studentObjectId: studentObjectId._id,
-                sid,
-                enrollmentNo,
-                studentRollNo,
-                studentName,
-                studentEmail,
-                studentMobileNo,
-                studentCource,
-                studentYear,
-                studentDiv,
-                IssueDetails: formattedIssueDetails,
-            });
-            return NextResponse.json({ success: true, message: 'Student book issued successfully', studentBookIssueDetails, studentBookIssueHistoryDetails }, { status: 200 });
         }
+
+        // Handling history
+        const existingHistoryRecord = await StudentsIssueBooksHistory.findOne({ sid });
+
+        if (existingHistoryRecord) {
+            const newHistoryBooks = formattedIssueDetails.filter((newBook: any) =>
+                !existingHistoryRecord.IssueDetails.some((existingBook: any) => existingBook.bookNo === newBook.bookNo)
+            );
+
+            existingHistoryRecord.IssueDetails.push(...newHistoryBooks);
+            await existingHistoryRecord.save();
+        } else {
+            await StudentsIssueBooksHistory.create({
+                adminObjectId: studentObjectId.adminId,
+                studentObjectId: studentObjectId._id,
+                sid,
+                enrollmentNo,
+                studentRollNo,
+                studentName,
+                studentEmail,
+                studentMobileNo,
+                studentCource,
+                studentYear,
+                studentDiv,
+                IssueDetails: formattedIssueDetails,
+            });
+        }
+
+        return NextResponse.json({ success: true, message: 'Book issued successfully' }, { status: 200 });
     } catch (error) {
         console.log(error);
         return NextResponse.json({ success: false, message: 'An error occurred while issuing the book' }, { status: 500 });
