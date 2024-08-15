@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from "react";
-import { useState,use } from 'react';
+import { useState,useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Image from "next/image";
@@ -13,7 +13,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
 import { Pagination, Autoplay, Navigation } from "swiper/modules";
-import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; //eye icon on password
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import Loading from "@/components/loading"
 
 export default function Admin() {
