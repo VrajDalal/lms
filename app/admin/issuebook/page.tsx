@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import Dashboard from "@/app/admin/dashboard/page"
 import ShowSuccessGif from '@/app/component/showSuccessGif/page'
+import Loading from "@/components/loading"
 
 interface IStudentDetails {
     sid: number;
@@ -49,7 +50,13 @@ export default function IssueBook() {
     const [newIssueBookIndex, setNewIssueBookIndex] = useState<number | null>(null)
     const [isRenewalBookDetailsIndex, setIsRenewalBookDetailsIndex] = useState<number | null>(null)
     const [bookIssuedDone, setBookIssuedDone] = useState(false)
+    const [loading, setLoading] = useState(true)
 
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false)
+        }, 2000)
+    }, [])
     const handleSearchStudentId = async (studentId: string) => {
 
         const searchIdPattern = /^[0-9]{10}$/
@@ -364,244 +371,251 @@ export default function IssueBook() {
     return (
         <>
             <title>Issue Book</title>
-            <Dashboard />
-            <div className='flex flex-col pl-20  md:pl-24 lg:pl-64 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
-                <div className="text-5xl font-bold mt-4">
-                    <h1>Issue Book</h1>
+            {loading && (
+                <div className="loader-overlay loader-container">
+                    <Loading />
                 </div>
-                <br />
-                <hr />
-                <div className='border-4 border-gray-300 min-h-auto rounded-3xl bg-white p-6 m-4 md:m-8 shadow-2xl'>
-                    <>
-                        <form className='m-4'>
-                            <div className='text-xl mt-4 flex flex-col md:flex-row md:items-center md:space-x-4'>
-                                <label htmlFor="txtSearchBox" className='mr-2'>Search</label>
-                                <Input
-                                    type='text'
-                                    id='txtSearchBox'
-                                    value={searchStudentId}
-                                    onChange={e => setSearchStudentId(e.target.value)}
-                                    placeholder='Enter student id..'
-                                    className='w-full md:w-2/4 text-xl mb-2 md:mb-0'
-                                />
-                                <button onClick={() => handleSearchStudentId(searchStudentId)} type='button'>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        width="24"
-                                        height="24"
-                                        fill="none"
-                                        className='inline-block'
-                                    >
-                                        <path d="M17.5 17.5L22 22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                                    </svg>
-                                </button>
-                            </div>
-                            {showSuccessGif ? (
-                                <ShowSuccessGif />
-                            ) : (
-                                !showSuccessGif && studentIdFound && showStudentDetails && studentDetails ? (
-                                    <div className="mt-4 font-bold p-4">
-                                        <h3 className='text-2xl md:text-3xl lg:text-4xl font-bold mt-4 mb-8'>Student Details</h3>
-                                        <div className='border-2 border-gray-300 rounded-2xl shadow-2xl p-6'>
-                                            <div className="mb-4">
-                                                <div className="flex flex-col md:flex-row gap-6">
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtSID" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>SID</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.sid}</b>
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtenrollmentNo" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>EnrollmentNo</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.enrollmentNo}</b>
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtstudentRollNo" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>StudentRollNo</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.studentRollNo}</b>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="mb-4">
-                                                <div className="flex flex-col md:flex-row gap-6">
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtstudentName" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>StudentName</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.studentName}</b>
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtstudentEmail" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>StudentEmail</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.studentEmail}</b>
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtstudentMobileNo" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>MobileNo</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.studentMobileNo}</b>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="mb-4">
-                                                <div className="flex flex-col md:flex-row gap-4">
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtstudentCource" className='block text-center md:text-left text-md md:text-sm lg:text-lg font-medium mb-2'>StudentCource</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.studentCource}</b>
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtstudentYear" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>AcademicYear</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.studentYear}</b>
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <label htmlFor="txtstudentDiv" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>StudentDiv</label>
-                                                        <p className="text-center md:text-left w-full">
-                                                            <b>{studentDetails.studentDiv}</b>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col space-y-4">
-                                            <h2 className='text-lg md:text-xl lg:text-2xl font-bold mt-6'>Issue Book Details</h2>
-                                            {bookIssues.map((bookIssue, index) => (
-                                                <div key={index} className="flex items-center space-x-4 border-2 border-gray-300 rounded-2xl p-4 shadow-2xl">
-                                                    <div className="flex-1">
-                                                        <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Book No:</p>
-                                                        <Input
-                                                            type='text'
-                                                            className="text-center md:text-left w-full"
-                                                            value={bookIssue.bookNo}
-                                                            onChange={e => handleInputChange(index, 'bookNo', e.target.value)}
-                                                            readOnly={newIssueBookIndex !== index}
-                                                            title={bookIssue.bookNo}
-                                                        />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Book Name:</p>
-                                                        <Input
-                                                            type='text'
-                                                            className="text-center md:text-left w-full"
-                                                            value={bookIssue.bookName}
-                                                            onChange={e => handleInputChange(index, 'bookName', e.target.value)}
-                                                            readOnly={newIssueBookIndex !== index}
-                                                        />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Issue Date:</p>
-                                                        <Popover>
-                                                            <PopoverTrigger asChild>
-                                                                <Button
-                                                                    variant={"outline"}
-                                                                    className={cn(
-                                                                        "text-center md:text-left w-full",
-                                                                        !bookIssue.bookIssueDate && "text-muted-foreground"
-                                                                    )}
-                                                                >
-                                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                    <span className='text-sm md:text-sm lg:text-lg'>
-                                                                        {bookIssue.bookIssueDate ? format(bookIssue.bookIssueDate, "PPP") : <span>Pick a date</span>}
-                                                                    </span>
-                                                                </Button>
-                                                            </PopoverTrigger>
-                                                            <PopoverContent className="w-full md:w-auto p-0">
-                                                                <Calendar
-                                                                    mode="single"
-                                                                    selected={bookIssue.bookIssueDate}
-                                                                    onSelect={(date) => updateBookIssueDetails(index, 'bookIssueDate', date)}
-                                                                    initialFocus
-                                                                    disabled
-                                                                    className="w-full"
-                                                                />
-                                                            </PopoverContent>
-                                                        </Popover>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Return Date:</p>
-                                                        <Popover>
-                                                            <PopoverTrigger asChild>
-                                                                <Button
-                                                                    variant={"outline"}
-                                                                    className={cn(
-                                                                        "text-center md:text-left w-full",
-                                                                        !bookIssue.returnDate && "text-muted-foreground"
-                                                                    )}
-                                                                >
-                                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                    <span className='text-sm md:text-sm lg:text-lg'>
-                                                                        {bookIssue.returnDate ? format(bookIssue.returnDate, "PPP") : <span>Pick a date</span>}
-                                                                    </span>
-                                                                </Button>
-                                                            </PopoverTrigger>
-                                                            <PopoverContent className="w-auto p-0">
-                                                                <Calendar
-                                                                    mode="single"
-                                                                    selected={bookIssue.returnDate}
-                                                                    onSelect={(date) => updateBookIssueDetails(index, 'returnDate', date)}
-                                                                    initialFocus
-                                                                    disabled
-                                                                    className="w-full"
-                                                                />
-                                                            </PopoverContent>
-                                                        </Popover>
-                                                    </div>
-                                                    {/*!addNewBookIssueBtn && bookIssue.returnDate === new Date() &&*/}
-                                                    {isReturnDateToday(bookIssue.returnDate) && (
-                                                        <>
-                                                            <button type='button' title='Renew Book Details' onClick={() => handleRenewalClick(index, studentDetails.sid)} className='mt-6'>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
-                                                                    <path d="M11.0215 6.78662V19.7866" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                    <path d="M11 19.5C10.7777 19.5 10.3235 19.2579 9.41526 18.7738C8.4921 18.2818 7.2167 17.7922 5.5825 17.4849C3.74929 17.1401 2.83268 16.9678 2.41634 16.4588C2 15.9499 2 15.1347 2 13.5044V7.09655C2 5.31353 2 4.42202 2.6487 3.87302C3.29741 3.32401 4.05911 3.46725 5.5825 3.75372C8.58958 4.3192 10.3818 5.50205 11 6.18114C11.6182 5.50205 13.4104 4.3192 16.4175 3.75372C17.9409 3.46725 18.7026 3.32401 19.3513 3.87302C20 4.42202 20 5.31353 20 7.09655V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                                    <path d="M20.8638 12.9393L21.5589 13.6317C22.147 14.2174 22.147 15.1672 21.5589 15.7529L17.9171 19.4485C17.6306 19.7338 17.2642 19.9262 16.8659 20.0003L14.6088 20.4883C14.2524 20.5653 13.9351 20.2502 14.0114 19.895L14.4919 17.6598C14.5663 17.2631 14.7594 16.8981 15.0459 16.6128L18.734 12.9393C19.3222 12.3536 20.2757 12.3536 20.8638 12.9393Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                                </svg>
-                                                            </button>
-
-
-                                                            <button type='button' title='Delete Book Details' className='mt-6' onClick={() => deleteStudentBookIssueDetails(studentDetails.sid, bookIssue.bookNo)}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
-                                                                    <path d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                    <path d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                    <path d="M9.5 16.5L9.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                    <path d="M14.5 16.5L14.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                </svg>
-                                                            </button>
-
-                                                        </>
-                                                    )}
-                                                </div>
-                                            ))}
-                                            <button type='button' title='Add New Book' onClick={addNewBookIssue} className='w-8'>
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="#000000" fill="none" className='mb-2 cursor-pointer'>
-                                                    <path d="M12 8V16M16 12L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                    <path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" stroke="currentColor" strokeWidth="1.5" />
-                                                </svg>
-                                            </button>
-                                        </div>
-
-                                        <div className="mt-4">
-                                            <Button onClick={handleBookIssue}>Issue Books</Button>
-                                        </div>
-                                    </div>
+            )}
+            <div className={`main-content ${loading ? 'blur' : ''}`}>
+                <Dashboard />
+                <div className='flex flex-col pl-20  md:pl-24 lg:pl-64 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
+                    <div className="text-5xl font-bold mt-4">
+                        <h1>Issue Book</h1>
+                    </div>
+                    <br />
+                    <hr />
+                    <div className='border-4 border-gray-300 min-h-auto rounded-3xl bg-white p-6 m-4 md:m-8 shadow-2xl'>
+                        <>
+                            <form className='m-4'>
+                                <div className='text-xl mt-4 flex flex-col md:flex-row md:items-center md:space-x-4'>
+                                    <label htmlFor="txtSearchBox" className='mr-2'>Search</label>
+                                    <Input
+                                        type='text'
+                                        id='txtSearchBox'
+                                        value={searchStudentId}
+                                        onChange={e => setSearchStudentId(e.target.value)}
+                                        placeholder='Enter student id..'
+                                        className='w-full md:w-2/4 text-xl mb-2 md:mb-0'
+                                    />
+                                    <button onClick={() => handleSearchStudentId(searchStudentId)} type='button'>
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            width="24"
+                                            height="24"
+                                            fill="none"
+                                            className='inline-block'
+                                        >
+                                            <path d="M17.5 17.5L22 22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                {showSuccessGif ? (
+                                    <ShowSuccessGif />
                                 ) : (
-                                    <div className="flex justify-center items-center h-64 mt-8">
-                                        <div className="text-center">
-                                            <Image src="/no-data.png" alt="No data found" priority width={300} height={300} className="mx-auto mb-4" />
-                                            <p className="text-gray-600 text-xl font-semibold -mt-6 mb-4">Student details not found.</p>
+                                    !showSuccessGif && studentIdFound && showStudentDetails && studentDetails ? (
+                                        <div className="mt-4 font-bold p-4">
+                                            <h3 className='text-2xl md:text-3xl lg:text-4xl font-bold mt-4 mb-8'>Student Details</h3>
+                                            <div className='border-2 border-gray-300 rounded-2xl shadow-2xl p-6'>
+                                                <div className="mb-4">
+                                                    <div className="flex flex-col md:flex-row gap-6">
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtSID" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>SID</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.sid}</b>
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtenrollmentNo" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>EnrollmentNo</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.enrollmentNo}</b>
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtstudentRollNo" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>StudentRollNo</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.studentRollNo}</b>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="mb-4">
+                                                    <div className="flex flex-col md:flex-row gap-6">
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtstudentName" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>StudentName</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.studentName}</b>
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtstudentEmail" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>StudentEmail</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.studentEmail}</b>
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtstudentMobileNo" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>MobileNo</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.studentMobileNo}</b>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="mb-4">
+                                                    <div className="flex flex-col md:flex-row gap-4">
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtstudentCource" className='block text-center md:text-left text-md md:text-sm lg:text-lg font-medium mb-2'>StudentCource</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.studentCource}</b>
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtstudentYear" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>AcademicYear</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.studentYear}</b>
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <label htmlFor="txtstudentDiv" className='block text-center md:text-left text-sm md:text-sm lg:text-lg font-medium mb-2'>StudentDiv</label>
+                                                            <p className="text-center md:text-left w-full">
+                                                                <b>{studentDetails.studentDiv}</b>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col space-y-4">
+                                                <h2 className='text-lg md:text-xl lg:text-2xl font-bold mt-6'>Issue Book Details</h2>
+                                                {bookIssues.map((bookIssue, index) => (
+                                                    <div key={index} className="flex items-center space-x-4 border-2 border-gray-300 rounded-2xl p-4 shadow-2xl">
+                                                        <div className="flex-1">
+                                                            <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Book No:</p>
+                                                            <Input
+                                                                type='text'
+                                                                className="text-center md:text-left w-full"
+                                                                value={bookIssue.bookNo}
+                                                                onChange={e => handleInputChange(index, 'bookNo', e.target.value)}
+                                                                readOnly={newIssueBookIndex !== index}
+                                                                title={bookIssue.bookNo}
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Book Name:</p>
+                                                            <Input
+                                                                type='text'
+                                                                className="text-center md:text-left w-full"
+                                                                value={bookIssue.bookName}
+                                                                onChange={e => handleInputChange(index, 'bookName', e.target.value)}
+                                                                readOnly={newIssueBookIndex !== index}
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Issue Date:</p>
+                                                            <Popover>
+                                                                <PopoverTrigger asChild>
+                                                                    <Button
+                                                                        variant={"outline"}
+                                                                        className={cn(
+                                                                            "text-center md:text-left w-full",
+                                                                            !bookIssue.bookIssueDate && "text-muted-foreground"
+                                                                        )}
+                                                                    >
+                                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                                        <span className='text-sm md:text-sm lg:text-lg'>
+                                                                            {bookIssue.bookIssueDate ? format(bookIssue.bookIssueDate, "PPP") : <span>Pick a date</span>}
+                                                                        </span>
+                                                                    </Button>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent className="w-full md:w-auto p-0">
+                                                                    <Calendar
+                                                                        mode="single"
+                                                                        selected={bookIssue.bookIssueDate}
+                                                                        onSelect={(date) => updateBookIssueDetails(index, 'bookIssueDate', date)}
+                                                                        initialFocus
+                                                                        disabled
+                                                                        className="w-full"
+                                                                    />
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Return Date:</p>
+                                                            <Popover>
+                                                                <PopoverTrigger asChild>
+                                                                    <Button
+                                                                        variant={"outline"}
+                                                                        className={cn(
+                                                                            "text-center md:text-left w-full",
+                                                                            !bookIssue.returnDate && "text-muted-foreground"
+                                                                        )}
+                                                                    >
+                                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                                        <span className='text-sm md:text-sm lg:text-lg'>
+                                                                            {bookIssue.returnDate ? format(bookIssue.returnDate, "PPP") : <span>Pick a date</span>}
+                                                                        </span>
+                                                                    </Button>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent className="w-auto p-0">
+                                                                    <Calendar
+                                                                        mode="single"
+                                                                        selected={bookIssue.returnDate}
+                                                                        onSelect={(date) => updateBookIssueDetails(index, 'returnDate', date)}
+                                                                        initialFocus
+                                                                        disabled
+                                                                        className="w-full"
+                                                                    />
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        </div>
+                                                        {/*!addNewBookIssueBtn && bookIssue.returnDate === new Date() &&*/}
+                                                        {isReturnDateToday(bookIssue.returnDate) && (
+                                                            <>
+                                                                <button type='button' title='Renew Book Details' onClick={() => handleRenewalClick(index, studentDetails.sid)} className='mt-6'>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
+                                                                        <path d="M11.0215 6.78662V19.7866" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                        <path d="M11 19.5C10.7777 19.5 10.3235 19.2579 9.41526 18.7738C8.4921 18.2818 7.2167 17.7922 5.5825 17.4849C3.74929 17.1401 2.83268 16.9678 2.41634 16.4588C2 15.9499 2 15.1347 2 13.5044V7.09655C2 5.31353 2 4.42202 2.6487 3.87302C3.29741 3.32401 4.05911 3.46725 5.5825 3.75372C8.58958 4.3192 10.3818 5.50205 11 6.18114C11.6182 5.50205 13.4104 4.3192 16.4175 3.75372C17.9409 3.46725 18.7026 3.32401 19.3513 3.87302C20 4.42202 20 5.31353 20 7.09655V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                        <path d="M20.8638 12.9393L21.5589 13.6317C22.147 14.2174 22.147 15.1672 21.5589 15.7529L17.9171 19.4485C17.6306 19.7338 17.2642 19.9262 16.8659 20.0003L14.6088 20.4883C14.2524 20.5653 13.9351 20.2502 14.0114 19.895L14.4919 17.6598C14.5663 17.2631 14.7594 16.8981 15.0459 16.6128L18.734 12.9393C19.3222 12.3536 20.2757 12.3536 20.8638 12.9393Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                    </svg>
+                                                                </button>
+
+
+                                                                <button type='button' title='Delete Book Details' className='mt-6' onClick={() => deleteStudentBookIssueDetails(studentDetails.sid, bookIssue.bookNo)}>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
+                                                                        <path d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                        <path d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                        <path d="M9.5 16.5L9.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                        <path d="M14.5 16.5L14.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                    </svg>
+                                                                </button>
+
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                <button type='button' title='Add New Book' onClick={addNewBookIssue} className='w-8'>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="#000000" fill="none" className='mb-2 cursor-pointer'>
+                                                        <path d="M12 8V16M16 12L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                        <path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" stroke="currentColor" strokeWidth="1.5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <div className="mt-4">
+                                                <Button onClick={handleBookIssue}>Issue Books</Button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                        </form>
-                    </>
+                                    ) : (
+                                        <div className="flex justify-center items-center h-64 mt-8">
+                                            <div className="text-center">
+                                                <Image src="/no-data.png" alt="No data found" priority width={300} height={300} className="mx-auto mb-4" />
+                                                <p className="text-gray-600 text-xl font-semibold -mt-6 mb-4">Student details not found.</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </form>
+                        </>
+                    </div>
                 </div>
             </div>
         </>

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ interface ShowExpiryModalProps {
   isOpen: boolean;
 }
 
-const ShowExpiryModal: React.FC<ShowExpiryModalProps> = ({ isOpen }) => {
+function ShowExpiryModal({ isOpen }: ShowExpiryModalProps) {
   const router = useRouter();
 
   const handleLogin = () => {
@@ -23,11 +23,13 @@ const ShowExpiryModal: React.FC<ShowExpiryModalProps> = ({ isOpen }) => {
         <h2 className="text-xl font-bold mb-4">Session Expired</h2>
         <p className="mb-4">Your session has expired. Redirect to login.</p>
         <div className="flex justify-end">
-          <Button onClick={handleLogin} className="text-xl">Login</Button>
+          <Button onClick={handleLogin} className="text-xl">
+            Login
+          </Button>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default ShowExpiryModal;
