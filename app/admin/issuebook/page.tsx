@@ -39,6 +39,7 @@ export default function IssueBook() {
     const [showStudentDetails, setShowStudentDetails] = useState(false)
     const [studentDetails, setStudentDetails] = useState<IStudentDetails | null>(null)
     const [bookIssues, setBookIssues] = useState<IBookIssue[]>([{ bookNo: '', bookIssueDate: new Date(), bookName: '', returnDate: new Date(new Date().setDate(new Date().getDate() + 7)) }])
+    const [tempBookIssues, setTempBookIssues] = useState<IBookIssue[]>([]);
     const [inputFilled, setInputFilled] = useState(false)
     const [showContent, setShowContent] = useState(false);
     const [showSuccessGif, setShowSuccessGif] = useState(false);
@@ -206,22 +207,22 @@ export default function IssueBook() {
         setInputFilled(true)
     }
 
-    const handleRenewalClick = async (index: number) => {
+    const handleRenewalClick = async (index: number, sid: number) => {
+        setIsRenewalBookDetailsIndex(index);
         setBookIssues(prevIssues => {
-            const updatedIssue = [...prevIssues]
-            const bookIssueCurrentDate = new Date()
-            const newReturnDate = new Date(bookIssueCurrentDate)
-            newReturnDate.setDate(bookIssueCurrentDate.getDate() + 7)
+            const updatedIssue = [...prevIssues];
+            const bookIssueCurrentDate = new Date();
+            const newReturnDate = new Date(bookIssueCurrentDate);
+            newReturnDate.setDate(bookIssueCurrentDate.getDate() + 7);
 
             updatedIssue[index] = {
                 ...updatedIssue[index],
                 bookIssueDate: bookIssueCurrentDate,
                 returnDate: newReturnDate
-            }
-            return updatedIssue
-        })
-        setIsRenewalBookDetailsIndex(index)
-        console.log(bookIssues[index]);
+            };
+            return updatedIssue;
+        });
+        await handleRenewalSaveClick(index, sid);
     }
 
     const handleInputChange = (index: number, field: any, value: string) => {
@@ -237,35 +238,35 @@ export default function IssueBook() {
     }
 
     const handleRenewalSaveClick = async (index: any, sid: number) => {
-
-        const updatedBookIssueDetails = bookIssues[index]
+        setIsRenewalBookDetailsIndex(index);
+        const updatedBookIssueDetails = bookIssues[index];
+        console.log(updatedBookIssueDetails)
         try {
-
-            const updateBookIssueDetailsRespose = await fetch(`/api/admin/renewalBookIssueDetails/${sid}/${updatedBookIssueDetails.bookNo}`, {
+            const updateBookIssueDetailsResponse = await fetch(`/api/admin/renewalBookIssueDetails/${sid}/${updatedBookIssueDetails.bookNo}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    sid: studentDetails?.sid,
                     bookNo: updatedBookIssueDetails.bookNo,
-                    bookIssueDate: format(updatedBookIssueDetails.bookIssueDate, "yyyy-MM-dd"),
-                    returnDate: format(updatedBookIssueDetails.returnDate, "yyyy-MM-dd")
+                    bookIssueDate: format(updatedBookIssueDetails.bookIssueDate, "dd-MM-yyyy"),
+                    returnDate: format(updatedBookIssueDetails.returnDate, "dd-MM-yyyy")
                 }),
                 credentials: 'include'
-            })
-
-            console.log(updateBookIssueDetailsRespose);
-
-            const updateBookIssueDetailsResult = await updateBookIssueDetailsRespose.json()
-            console.log(updateBookIssueDetailsResult);
+            });
+            console.log(updateBookIssueDetailsResponse)
+            const updateBookIssueDetailsResult = await updateBookIssueDetailsResponse.json();
+            console.log(updateBookIssueDetailsResult)
             if (updateBookIssueDetailsResult.success) {
+                const { bookIssueDate, returnDate } = updateBookIssueDetailsResult.data
                 const renewedBookDetails = `
-                Book Acc No: <b>${updatedBookIssueDetails.bookNo}</b><br>
-                Book Name: <b>${updatedBookIssueDetails.bookName}</b><br>
-                Issue Date: <b>${format(updatedBookIssueDetails.bookIssueDate, "yyyy-MM-dd")}</b><br>
-                Return Date: <b>${format(updatedBookIssueDetails.returnDate, "yyyy-MM-dd")}</b><br>
-                `
-
+            Book Acc No: <b>${updatedBookIssueDetails.bookNo}</b><br>
+            Book Name: <b>${updatedBookIssueDetails.bookName}</b><br>
+            Issue Date: <b>${bookIssueDate}</b><br>
+            Return Date: <b>${returnDate}</b><br>
+            `;
+                console.log(renewedBookDetails)
                 const renewedBookIssueDetailsResponse = await fetch('/api/admin/renewalBook-send-mail', {
                     method: 'POST',
                     headers: {
@@ -277,24 +278,25 @@ export default function IssueBook() {
                         bookDetails: renewedBookDetails
                     }),
                     credentials: 'include'
-                })
+                });
 
-                const renewedBookIssueDetailsResult = await renewedBookIssueDetailsResponse.json()
+                const renewedBookIssueDetailsResult = await renewedBookIssueDetailsResponse.json();
                 if (renewedBookIssueDetailsResult.success) {
-                    toast.success('Renewal done successfully')
-                    await handleSearchStudentId(searchStudentId)
-                    setBookIssuedDone(true)
-                    setNewIssueBookIndex(null)
+                    toast.success('Renewal done successfully');
+                    await handleSearchStudentId(searchStudentId);
+                    setBookIssuedDone(true);
+                    setNewIssueBookIndex(null);
                 } else {
-                    toast.success('Renewal done successfully mail not send')
+                    toast.success('Renewal done successfully but mail not sent');
                 }
-
             } else {
-                toast.error('Error at the renewal time')
+                toast.error('Error at the renewal time');
             }
         } catch (error) {
             console.error('Error in book issue renewal:', error);
-            toast.error("Error in book issue renewal")
+            toast.error("Error in book issue renewal");
+        } finally {
+            setIsRenewalBookDetailsIndex(null);
         }
     }
 
@@ -358,6 +360,7 @@ export default function IssueBook() {
     //mail integration pending : Done
     //when i click on renewal svg then swap the date of both table : Done
     //data store in issuebook table but not inserted in history table : Done
+    //on renewal ,renewal button show after click save button not show
     return (
         <>
             <title>Issue Book</title>
@@ -555,7 +558,7 @@ export default function IssueBook() {
                                                     {/*!addNewBookIssueBtn && bookIssue.returnDate === new Date() &&*/}
                                                     {isReturnDateToday(bookIssue.returnDate) && (
                                                         <>
-                                                            <button type='button' title='Renew Book Details' onClick={() => handleRenewalClick(index)} className='mt-6'>
+                                                            <button type='button' title='Renew Book Details' onClick={() => handleRenewalClick(index, studentDetails.sid)} className='mt-6'>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
                                                                     <path d="M11.0215 6.78662V19.7866" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                                                     <path d="M11 19.5C10.7777 19.5 10.3235 19.2579 9.41526 18.7738C8.4921 18.2818 7.2167 17.7922 5.5825 17.4849C3.74929 17.1401 2.83268 16.9678 2.41634 16.4588C2 15.9499 2 15.1347 2 13.5044V7.09655C2 5.31353 2 4.42202 2.6487 3.87302C3.29741 3.32401 4.05911 3.46725 5.5825 3.75372C8.58958 4.3192 10.3818 5.50205 11 6.18114C11.6182 5.50205 13.4104 4.3192 16.4175 3.75372C17.9409 3.46725 18.7026 3.32401 19.3513 3.87302C20 4.42202 20 5.31353 20 7.09655V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -563,23 +566,16 @@ export default function IssueBook() {
                                                                 </svg>
                                                             </button>
 
-                                                            {isRenewalBookDetailsIndex === index ? (
-                                                                <button type='button' title='Save Changes' className='mt-6' onClick={() => handleRenewalSaveClick(index, studentDetails.sid)}>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
-                                                                        <path d="M12 22.0002C7.75736 22.0002 5.63604 22.0002 4.31802 20.5358C3 19.0713 3 16.7143 3 12.0002C3 7.28617 3 4.92915 4.31802 3.46468C5.63604 2.00022 7.75736 2.00022 12 2.00022C16.2426 2.00022 18.364 2.00022 19.682 3.46468C21 4.92915 21 7.28617 21 12.0002C21 16.7143 21 19.0713 19.682 20.5358C18.364 22.0002 16.2426 22.0002 12 22.0002Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                                        <path d="M8 2.5V9.82621C8 11.0733 8 11.6969 8.38642 11.9201C9.13473 12.3523 10.5384 10.9103 11.205 10.4761C11.5916 10.2243 11.7849 10.0984 12 10.0984C12.2151 10.0984 12.4084 10.2243 12.795 10.4761C13.4616 10.9103 14.8653 12.3523 15.6136 11.9201C16 11.6969 16 11.0733 16 9.82621V2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                                    </svg>
-                                                                </button>
-                                                            ) : (
-                                                                <button type='button' title='Delete Book Details' className='mt-6' onClick={() => deleteStudentBookIssueDetails(studentDetails.sid, bookIssue.bookNo)}>
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
-                                                                        <path d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                        <path d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                        <path d="M9.5 16.5L9.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                        <path d="M14.5 16.5L14.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                    </svg>
-                                                                </button>
-                                                            )}
+
+                                                            <button type='button' title='Delete Book Details' className='mt-6' onClick={() => deleteStudentBookIssueDetails(studentDetails.sid, bookIssue.bookNo)}>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
+                                                                    <path d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                    <path d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                    <path d="M9.5 16.5L9.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                    <path d="M14.5 16.5L14.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                </svg>
+                                                            </button>
+
                                                         </>
                                                     )}
                                                 </div>
@@ -599,7 +595,7 @@ export default function IssueBook() {
                                 ) : (
                                     <div className="flex justify-center items-center h-64 mt-8">
                                         <div className="text-center">
-                                            <Image src="/no-data.png" alt="No data found" width={300} height={300} className="mx-auto mb-4" />
+                                            <Image src="/no-data.png" alt="No data found" priority width={300} height={300} className="mx-auto mb-4" />
                                             <p className="text-gray-600 text-xl font-semibold -mt-6 mb-4">Student details not found.</p>
                                         </div>
                                     </div>

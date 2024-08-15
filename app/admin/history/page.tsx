@@ -134,20 +134,24 @@ export default function History() {
                                                                     <td className='p-4'>
                                                                         <Popover>
                                                                             <PopoverTrigger asChild>
-                                                                                <span>{format(bookIssue.bookIssueDate, 'PPP')}</span>
+                                                                                <span>
+                                                                                    {bookIssue.bookIssueDate ? format(new Date(bookIssue.bookIssueDate), 'PPP') : 'Invalid Date'}
+                                                                                </span>
                                                                             </PopoverTrigger>
                                                                             <PopoverContent className="w-auto p-0">
-                                                                                <Calendar mode="single" selected={bookIssue.bookIssueDate} disabled />
+                                                                                <Calendar mode="single" selected={new Date(bookIssue.bookIssueDate)} disabled />
                                                                             </PopoverContent>
                                                                         </Popover>
                                                                     </td>
                                                                     <td className='p-4'>
                                                                         <Popover>
                                                                             <PopoverTrigger asChild>
-                                                                                <span>{format(bookIssue.returnDate, 'PPP')}</span>
+                                                                                <span>
+                                                                                {bookIssue.returnDate ? format(new Date(bookIssue.returnDate), 'PPP') : 'Invalid Date'}
+                                                                                </span>
                                                                             </PopoverTrigger>
                                                                             <PopoverContent className="w-auto p-0">
-                                                                                <Calendar mode="single" selected={bookIssue.returnDate} disabled />
+                                                                                <Calendar mode="single" selected={new Date(bookIssue.returnDate)} disabled />
                                                                             </PopoverContent>
                                                                         </Popover>
                                                                     </td>
@@ -165,7 +169,7 @@ export default function History() {
                     ) : (
                         <div className='flex justify-center items-center'>
                             <div className='text-center'>
-                                <Image src='/no-data.png' alt='No data' width={450} height={450} />
+                                <Image src='/no-data.png' alt='No data' priority width={450} height={450} />
                                 <p className="text-gray-600 text-2xl font-semibold -mt-12">No data.</p>
                             </div>
                         </div>

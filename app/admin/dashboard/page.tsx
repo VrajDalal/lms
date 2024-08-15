@@ -92,11 +92,10 @@ export default function DashBoard() {
         router.push('/admin/login')
     }
 
-
     const handleToggleNav = () => {
         setIsNavOpen(!isNavOpen);
     };
-//bg-[#F8F4EF]
+
     return (
         <>
             <title>Dashboard</title>
@@ -106,7 +105,7 @@ export default function DashBoard() {
                     <nav className={`sticky top-0 z-50 px-1 py-1 pt-5 pb-5 ml-auto border-2 bg-[#F8F4EF] bg-opacity-85 transition ${isScrolled ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}>
                         <div className="py-0 px-2 flex items-center justify-between">
                             {/* Toggle Button to open Vertical Menu */}
-                            <button onClick={handleToggleNav} className='bg-[#F8F4EF] pl-1'> 
+                            <button onClick={handleToggleNav} className='bg-[#F8F4EF] pl-1'>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
                                     <path d="M4 5L20 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     <path d="M4 12L20 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -134,7 +133,7 @@ export default function DashBoard() {
                     <div>
                         <nav className={`fixed top-0 left-0 h-screen bg-[#F8F4EF] shadow-md transition-all duration-300 ${isNavOpen ? 'w-56' : 'w-16'}`}>
                             <div className={`flex justify-center mt-20 transition-opacity duration-200 ${isNavOpen ? 'opacity-100' : 'opacity-0'}`}>
-                                <Image src="/logo.jpeg" width={100} height={100} alt="Logo" />
+                                <Image src="/logo.jpeg" width={100} height={100} alt="Logo" loading='lazy' />
                             </div>
 
                             <ul className='list-none p-4'>
