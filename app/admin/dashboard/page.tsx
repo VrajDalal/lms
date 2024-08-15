@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import ShowExpiryModal from '@/app/showExpiryModal/page'
+import ShowExpiryModal from '@/app/component/showExpiryModal/page'
 import { useRouter } from 'next/navigation'
 import nookies from "nookies"
 import jwt, { JwtPayload } from "jsonwebtoken"
@@ -244,7 +244,7 @@ export default function DashBoard() {
                     </div >
                 </>
             ) : (
-                <ShowExpiryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+                <ShowExpiryModal isOpen={isModalOpen} />
             )}
         </>
     )
