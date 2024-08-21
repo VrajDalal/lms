@@ -41,54 +41,55 @@ export default function History() {
         }, 2000)
     }, [])
 
+
+    // document.onload = handleToGetStudentIssueBooks();
     useEffect(() => {
-        handleToGetStudentIssueBooks();
-    }, []);
+        const handleToGetStudentIssueBooksHistory = async () => {
+            try {
+                const studentBookIssueHistoryResponse = await fetch('/api/admin/issueBookHistory', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                });
 
-    const handleToGetStudentIssueBooks = async () => {
-        try {
-            const studentBookIssueHistoryResponse = await fetch('/api/admin/issueBookHistory', {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-            });
-
-            const studentBookIssueHistoryResult = await studentBookIssueHistoryResponse.json();
-            if (studentBookIssueHistoryResult.success) {
-                const formattedData = studentBookIssueHistoryResult.datas.map((item: any) => ({
-                    ...item,
-                    IssueDetails: item.IssueDetails.map((issue: any) => ({
-                        ...issue,
-                        bookIssueDate: isValid(parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date())) ? parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date()) : null,
-                        returnDate: isValid(parse(issue.returnDate, 'yyyy-MM-dd', new Date())) ? parse(issue.returnDate, 'yyyy-MM-dd', new Date()) : null,
-                    }))
-                }));
-                setStudentBookIssueHistory(formattedData);
-            } else {
-                toast.error('No data found or an error occurred');
+                const studentBookIssueHistoryResult = await studentBookIssueHistoryResponse.json();
+                if (studentBookIssueHistoryResult.success) {
+                    const formattedData = studentBookIssueHistoryResult.datas.map((item: any) => ({
+                        ...item,
+                        IssueDetails: item.IssueDetails.map((issue: any) => ({
+                            ...issue,
+                            bookIssueDate: isValid(parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date())) ? parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date()) : null,
+                            returnDate: isValid(parse(issue.returnDate, 'yyyy-MM-dd', new Date())) ? parse(issue.returnDate, 'yyyy-MM-dd', new Date()) : null,
+                        }))
+                    }));
+                    setStudentBookIssueHistory(formattedData);
+                } else {
+                    toast.error('No data found or an error occurred');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                toast.error('An error occurred while fetching the student issue book data');
             }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            toast.error('An error occurred while fetching the student issue book data');
-        }
-    };
+        };
+        handleToGetStudentIssueBooksHistory()
+    }, [])
 
-    const toggleVisibility = () => {
-        if (window.scrollY > 300) {
-            setIsVisible(true);
-        } else {
-            setIsVisible(false);
-        }
-    }
+    useEffect(() => {
+        const toggleVisibility = () => {
+            if (window.scrollY > 300) {
+                setIsVisible(true);
+            } else {
+                setIsVisible(false);
+            }
+        };
+        window.addEventListener('scroll', toggleVisibility);
+        return () => window.removeEventListener('scroll', toggleVisibility);
+    }, []);
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    useEffect(() => {
-        window.addEventListener('scroll', toggleVisibility);
-        return () => window.removeEventListener('scroll', toggleVisibility);
-    }, []);
 
     return (
         <>
