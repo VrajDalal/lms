@@ -119,7 +119,7 @@ export default function History() {
                     <div className='mt-4'>
                         {studentBookIssueHistory && studentBookIssueHistory.length > 0 ? (
                             studentBookIssueHistory.map((history, historyIndex) => (
-                                <Card key={historyIndex} className='bg-[#F8F4EF] border-2 border-gray-300 rounded-2xl shadow-2xl mb-6'>
+                                <Card key={history.sid} className='bg-[#F8F4EF] border-2 border-gray-300 rounded-2xl shadow-2xl mb-6'>
                                     <CardHeader>
                                         <CardTitle>Student ID: {history.sid}</CardTitle>
                                         <span className='text-xl'>{history.studentName} - {history.studentCource}</span>
@@ -170,7 +170,7 @@ export default function History() {
                                                         <tbody>
                                                             {history.IssueDetails.map((bookIssue, bookIssueIndex) => (
                                                                 <>
-                                                                    <tr key={bookIssueIndex} className='border-b font font-semibold'>
+                                                                    <tr key={`${history.sid}-${bookIssue.bookNo}`} className='border-b font font-semibold'>
                                                                         <td className='p-4'>{bookIssue.bookNo}</td>
                                                                         <td className='p-4'>{bookIssue.bookName}</td>
                                                                         <td className='p-4'>
