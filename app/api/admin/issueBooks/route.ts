@@ -3,7 +3,7 @@ import { connect } from "@/app/utils/mongo";
 import AddStudentsList from "@/lib/models/admin/addStudents.model";
 import StudentsIssueBooks from "@/lib/models/admin/studentsIssueBook.model";
 import StudentsIssueBooksHistory from "@/lib/models/admin/studentsIssueBookHistory.model";
-import { format, parseISO, isValid } from "date-fns";
+import { format, parse, isValid } from "date-fns";
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
         }
 
         const formattedIssueDetails = IssueDetails.map((detail: any) => {
-            const issueDate = detail.bookIssueDate ? parseISO(detail.bookIssueDate) : null;
-            const returnDate = detail.returnDate ? parseISO(detail.returnDate) : null;
+            const issueDate = detail.bookIssueDate ? parse(detail.bookIssueDate, "yyyy-MM-dd", new Date()) : null;
+            const returnDate = detail.returnDate ? parse(detail.returnDate, "yyyy-MM-dd", new Date()) : null;
 
             if (!issueDate || !isValid(issueDate) || (returnDate && !isValid(returnDate))) {
                 throw new Error('Invalid date format');
@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
 
             return {
                 bookNo: detail.bookNo,
-                bookIssueDate: format(issueDate, "dd-MM-yyyy"),
+                bookIssueDate: format(issueDate, "yyyy-MM-dd"),
                 bookName: detail.bookName,
-                returnDate: returnDate ? format(returnDate, "dd-MM-yyyy") : "",
+                returnDate: returnDate ? format(returnDate, "yyyy-MM-dd") : "",
             };
         });
 

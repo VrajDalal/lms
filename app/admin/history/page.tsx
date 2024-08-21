@@ -59,8 +59,8 @@ export default function History() {
                     ...item,
                     IssueDetails: item.IssueDetails.map((issue: any) => ({
                         ...issue,
-                        bookIssueDate: isValid(parse(issue.bookIssueDate, 'dd-MM-yyyy', new Date())) ? parse(issue.bookIssueDate, 'dd-MM-yyyy', new Date()) : null,
-                        returnDate: isValid(parse(issue.returnDate, 'dd-MM-yyyy', new Date())) ? parse(issue.returnDate, 'dd-MM-yyyy', new Date()) : null,
+                        bookIssueDate: isValid(parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date())) ? parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date()) : null,
+                        returnDate: isValid(parse(issue.returnDate, 'yyyy-MM-dd', new Date())) ? parse(issue.returnDate, 'yyyy-MM-dd', new Date()) : null,
                     }))
                 }));
                 setStudentBookIssueHistory(formattedData);

@@ -57,6 +57,7 @@ export default function IssueBook() {
             setLoading(false)
         }, 2000)
     }, [])
+
     const handleSearchStudentId = async (studentId: string) => {
 
         const searchIdPattern = /^[0-9]{10}$/
@@ -80,8 +81,8 @@ export default function IssueBook() {
                 const formattedData = searchIdResult.bookIssueDetails && searchIdResult.bookIssueDetails.length > 0
                     ? searchIdResult.bookIssueDetails.map((item: any) => ({
                         ...item,
-                        bookIssueDate: isValid(parse(item.bookIssueDate, 'dd-MM-yyyy', new Date())) ? parse(item.bookIssueDate, 'dd-MM-yyyy', new Date()) : new Date(),
-                        returnDate: isValid(parse(item.returnDate, 'dd-MM-yyyy', new Date())) ? parse(item.returnDate, 'dd-MM-yyyy', new Date()) : new Date(),
+                        bookIssueDate: isValid(parse(item.bookIssueDate, 'yyyy-MM-dd', new Date())) ? parse(item.bookIssueDate, 'yyyy-MM-dd', new Date()) : new Date(),
+                        returnDate: isValid(parse(item.returnDate, 'yyyy-MM-dd', new Date())) ? parse(item.returnDate, 'yyyy-MM-dd', new Date()) : new Date(),
                     })) : []
                 setBookIssues(formattedData)
             } else {
@@ -257,8 +258,8 @@ export default function IssueBook() {
                 body: JSON.stringify({
                     sid: studentDetails?.sid,
                     bookNo: updatedBookIssueDetails.bookNo,
-                    bookIssueDate: format(updatedBookIssueDetails.bookIssueDate, "dd-MM-yyyy"),
-                    returnDate: format(updatedBookIssueDetails.returnDate, "dd-MM-yyyy")
+                    bookIssueDate: format(updatedBookIssueDetails.bookIssueDate, "yyyy-MM-dd"),
+                    returnDate: format(updatedBookIssueDetails.returnDate, "yyyy-MM-dd")
                 }),
                 credentials: 'include'
             });
@@ -362,12 +363,13 @@ export default function IssueBook() {
     //update function pending : Done
     //on click of renewal svg renewthe data according to there id show cancel button also texbox not disable use something diffrent : Done
     //patch method pending to create : Done
-    //upload book detials excel 
-    //write book name and automatically it insert the bookNo
     //mail integration pending : Done
     //when i click on renewal svg then swap the date of both table : Done
     //data store in issuebook table but not inserted in history table : Done
     //on renewal ,renewal button show after click save button not show
+    //upload book detials excel 
+    //write book name and automatically it insert the bookNo
+    //in library section add manually books and save into table also (CRUD operation ,edit quantity,delete books)
     return (
         <>
             <title>Issue Book</title>
