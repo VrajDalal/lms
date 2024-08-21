@@ -49,13 +49,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'File size is too large. Maximum size is 5 MB.' }, { status: 400 })
         }
 
-        const dir = path.join(process.cwd(), 'public', 'Students-list', adminId)
-        await fs.mkdir(dir, { recursive: true })
+        // const dir = path.join(process.cwd(), 'public', 'Students-list', adminId)
+        // await fs.mkdir(dir, { recursive: true })
 
-        const filePath = path.join(dir, file.name);
+        // const filePath = path.join(dir, file.name);
         const arrayBuffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
-        await fs.writeFile(filePath, uint8Array);
+        // await fs.writeFile(filePath, uint8Array);
 
         const workBook = XLSX.read(uint8Array, { type: 'buffer' })
         const sheetName = workBook.SheetNames[0]
