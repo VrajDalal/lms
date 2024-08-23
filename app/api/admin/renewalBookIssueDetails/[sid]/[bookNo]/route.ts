@@ -35,10 +35,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { sid: numbe
 
         // Get the current date for the book issue date
         const currentDate = new Date();
-        const formattedCurrentDate = format(currentDate, "dd-MM-yyyy");
+        const formattedCurrentDate = format(currentDate, "yyyy-MM-dd");
 
         // Parse the incoming return date
-        const parsedReturnDate = parse(returnDate, "dd-MM-yyyy", new Date());
+        const parsedReturnDate = parse(returnDate, "yyyy-MM-dd", new Date());
 
         // Validate the return date
         if (!isValid(parsedReturnDate)) {
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { sid: numbe
 
         // Add 7 days to the parsed return date
         const updatedReturnDate = addDays(parsedReturnDate, 7);
-        const formattedReturnDate = format(updatedReturnDate, "dd-MM-yyyy");
+        const formattedReturnDate = format(updatedReturnDate, "yyyy-MM-dd");
 
         // Update the database with the new book issue date and return date
         const updatedStudentBookIssueDetails = await StudentsIssueBooks.updateOne(

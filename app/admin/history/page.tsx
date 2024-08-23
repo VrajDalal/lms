@@ -42,26 +42,32 @@ export default function History() {
     }, [])
 
 
-    // document.onload = handleToGetStudentIssueBooks();
     useEffect(() => {
         const handleToGetStudentIssueBooksHistory = async () => {
             try {
                 const studentBookIssueHistoryResponse = await fetch('/api/admin/issueBookHistory', {
                     method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-store',
+                    },
                     credentials: 'include',
                 });
-
+                console.log(studentBookIssueHistoryResponse);
                 const studentBookIssueHistoryResult = await studentBookIssueHistoryResponse.json();
+                console.log(studentBookIssueHistoryResult);
                 if (studentBookIssueHistoryResult.success) {
                     const formattedData = studentBookIssueHistoryResult.datas.map((item: any) => ({
                         ...item,
                         IssueDetails: item.IssueDetails.map((issue: any) => ({
                             ...issue,
-                            bookIssueDate: isValid(parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date())) ? parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date()) : null,
-                            returnDate: isValid(parse(issue.returnDate, 'yyyy-MM-dd', new Date())) ? parse(issue.returnDate, 'yyyy-MM-dd', new Date()) : null,
+                            // bookIssueDate: isValid(parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date())) ? parse(issue.bookIssueDate, 'yyyy-MM-dd', new Date()) : null,
+                            // returnDate: isValid(parse(issue.returnDate, 'yyyy-MM-dd', new Date())) ? parse(issue.returnDate, 'yyyy-MM-dd', new Date()) : null,
+                            bookIssueDate: issue.bookIssueDate,
+                            returnDate: issue.returnDate
                         }))
                     }));
+                    console.log(formattedData);
                     setStudentBookIssueHistory(formattedData);
                 } else {
                     toast.error('No data found or an error occurred');
