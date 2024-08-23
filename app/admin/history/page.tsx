@@ -35,11 +35,7 @@ export default function History() {
     const [loading, setLoading] = useState(true);
     const [isVisible, setIsVisible] = useState(false);
 
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false);
-        }, 2000);
-    }, []);
+
 
     useEffect(() => {
         const handleToGetStudentIssueBooksHistory = async () => {
@@ -72,6 +68,12 @@ export default function History() {
             }
         };
         handleToGetStudentIssueBooksHistory();
+    }, []);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 2000);
     }, []);
 
     useEffect(() => {
