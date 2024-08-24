@@ -35,8 +35,6 @@ export default function History() {
     const [loading, setLoading] = useState(true);
     const [isVisible, setIsVisible] = useState(false);
 
-
-
     useEffect(() => {
         const handleToGetStudentIssueBooksHistory = async () => {
             try {
