@@ -42,7 +42,9 @@ export default function History() {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Cache-Control': 'no-store',
+                        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0',
                     },
                     credentials: 'include',
                 });
@@ -66,7 +68,8 @@ export default function History() {
             }
         };
         handleToGetStudentIssueBooksHistory();
-    }, []);
+    }, []); // Empty dependencies array ensures this runs once when the component mounts.
+    
 
     useEffect(() => {
         setTimeout(() => {

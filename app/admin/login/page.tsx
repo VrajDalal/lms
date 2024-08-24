@@ -92,13 +92,13 @@ export default function Admin() {
                             speed={2000}
                             className="w-full h-full">
                             <SwiperSlide>
-                                <Image src="/login-corousal-1.jpg" alt="Image 1" width={1200} height={675} className="object-cover w-full h-screen" />
+                                <Image src="/login-corousal-1.jpg" alt="Image 1" width={1200} height={675} className="object-cover w-full h-screen" priority/>
                             </SwiperSlide>
                             <SwiperSlide>
-                                <Image src="/login-corousal-2.jpg" alt="Image 2" width={1200} height={675} className="object-cover w-full h-screen" />
+                                <Image src="/login-corousal-2.jpg" alt="Image 2" width={1200} height={675} className="object-cover w-full h-screen" priority/>
                             </SwiperSlide>
                             <SwiperSlide>
-                                <Image src="/login-corousal-3.jpg" alt="Image 3" width={1200} height={675} className="object-cover w-full h-screen" />
+                                <Image src="/login-corousal-3.jpg" alt="Image 3" width={1200} height={675} className="object-cover w-full h-screen" priority/>
                             </SwiperSlide>
                         </Swiper>
                     </div>
