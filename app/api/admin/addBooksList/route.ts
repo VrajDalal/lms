@@ -2,23 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path"
 import { connect } from "@/app/utils/mongo";
-import AddStudentsList from "@/lib/models/admin/addStudents.model";
 import Admin from "@/lib/models/admin/admin.model";
+import AddBooksList from "@/lib/models/admin/addBooksList.model";
 import * as XLSX from "xlsx"
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 
-interface IAddStudentsList {
+interface IAddBooksList {
     adminId: mongoose.Schema.Types.ObjectId,
-    sid: number,
-    enrollmentNo: string,
-    studentRollNo: number,
-    studentName: string,
-    studentEmail: string,
-    studentMobileNo: number,
-    studentCource: string,
-    studentYear: string,
-    studentDiv: string,
+    bookNo: string,
+    bookName: string,
+    bookAuthorName: string,
+    bookPublisherName: string,
+    bookQty: number,
     createdAt: Date
 }
 
@@ -26,6 +22,7 @@ export async function POST(req: NextRequest) {
     await connect()
 
     const token = req.cookies.get('adminToken')?.value
+
     if (!token) {
         return NextResponse.json({ success: false, message: 'unauthorized' }, { status: 401 })
     }
@@ -49,7 +46,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'File size is too large. Maximum size is 5 MB.' }, { status: 400 })
         }
 
-        const dir = path.join(process.cwd(), 'public', 'Students-list', adminId)
+        const dir = path.join(process.cwd(), 'public', 'Books-list', adminId)
         await fs.mkdir(dir, { recursive: true })
 
         const filePath = path.join(dir, file.name);
@@ -60,37 +57,35 @@ export async function POST(req: NextRequest) {
         const workBook = XLSX.read(uint8Array, { type: 'buffer' })
         const sheetName = workBook.SheetNames[0]
         const sheet = workBook.Sheets[sheetName]
-        const excelData = XLSX.utils.sheet_to_json<IAddStudentsList>(sheet)
+        const excelData = XLSX.utils.sheet_to_json<IAddBooksList>(sheet)
 
         const admin = await Admin.find({ _id: decodedToken.id })
         if (!admin) {
-            return NextResponse.json({ message: 'Admin not found' }, { status: 404 })
+            return NextResponse.json({ success: false, message: 'Admin not found' }, { status: 404 })
         }
 
-        const allStudents = []
+        const allBooks = []
         const getAdminId = admin[0]
         console.log(getAdminId);
+
         for (const row of excelData) {
-            const studentsList = await AddStudentsList.create({
+            const booksList = AddBooksList.create({
                 adminId: getAdminId._id,
-                sid: row.sid,
-                enrollmentNo: row.enrollmentNo,
-                studentRollNo: row.studentRollNo,
-                studentName: row.studentName,
-                studentEmail: row.studentEmail,
-                studentMobileNo: row.studentMobileNo,
-                studentCource: row.studentCource,
-                studentYear: row.studentYear,
-                studentDiv: row.studentDiv,
-                createdAt: row.createdAt
+                bookNo: row.bookNo,
+                bookName: row.bookName,
+                bookAuthorName: row.bookAuthorName,
+                bookPublisherName: row.bookPublisherName,
+                bookQty: row.bookQty,
+                createdAt: row.createdAt,
             })
-            allStudents.push(studentsList)
+            allBooks.push(booksList)
         }
 
-        return NextResponse.json({ success: true, fileUrl: `/Students-list/${adminId}/${file.name}`, allStudents }, { status: 200 })
+        return NextResponse.json({ success: true, fileUrl: `/Books-list/${adminId}/${file.name}`, allBooks }, { status: 200 })
 
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
+
 }

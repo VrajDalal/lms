@@ -380,7 +380,7 @@ export default function IssueBook() {
             )}
             <div className={`main-content ${loading ? 'blur' : ''}`}>
                 <Dashboard />
-                <div className='flex flex-col pl-20  md:pl-24 lg:pl-64 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
+                <div className='flex flex-col pl-20  md:pl-24 lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
                     <div className="text-5xl font-bold mt-4">
                         <h1>Issue Book</h1>
                     </div>

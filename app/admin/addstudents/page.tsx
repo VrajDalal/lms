@@ -21,13 +21,13 @@ export default function AddStudents() {
     const fileInputRef = useRef<HTMLInputElement | null>(null)
 
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleStudentsFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setSelectedFile(e.target.files[0])
         }
     }
 
-    const handleExcelFileUpload = async (e: any) => {
+    const handleStudentsExcelFileUpload = async (e: any) => {
         e.preventDefault()
 
         if (!selectedFile) {
@@ -39,22 +39,22 @@ export default function AddStudents() {
         formData.append('file', selectedFile)
 
         try {
-            const excelFileUploadResponce = await fetch('/api/admin/addStudentsList', {
+            const studentsExcelFileUploadResponce = await fetch('/api/admin/addStudentsList', {
                 method: 'POST',
                 body: formData
             })
-            console.log(excelFileUploadResponce);
-            const excelFileUploadResult = await excelFileUploadResponce.json()
-            console.log(excelFileUploadResult);
+            console.log(studentsExcelFileUploadResponce);
+            const studentsExcelFileUploadResult = await studentsExcelFileUploadResponce.json()
+            console.log(studentsExcelFileUploadResult);
 
-            if (excelFileUploadResult.success) {
+            if (studentsExcelFileUploadResult.success) {
                 toast.success('File uploaded successfully')
                 setSelectedFile(null)
                 if (fileInputRef.current?.value) {
                     fileInputRef.current.value = '';
                 }
             } else {
-                toast.error(`Error: ${excelFileUploadResult.error}`)
+                toast.error(`Error: ${studentsExcelFileUploadResult.error}`)
             }
         } catch (error) {
             console.log('Error uploading file', error);
@@ -72,7 +72,7 @@ export default function AddStudents() {
             )}
             <div className={`main-content ${loading ? 'blur' : ''}`}>
                 <Dashboard />
-                <div className='flex flex-col pl-20  md:pl-24 lg:pl-64 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
+                <div className='flex flex-col pl-20  md:pl-24 lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
                     <div className="text-5xl font-bold mt-2">
                         <h1>Enter Students Details</h1>
                     </div>
@@ -91,9 +91,9 @@ export default function AddStudents() {
                                         <path d="M12 11V14M12 14V17M12 14H7.5M12 14H16.5M9.5 17H14.5C15.4428 17 15.9142 17 16.2071 16.7071C16.5 16.4142 16.5 15.9428 16.5 15V13C16.5 12.0572 16.5 11.5858 16.2071 11.2929C15.9142 11 15.4428 11 14.5 11H9.5C8.55719 11 8.08579 11 7.79289 11.2929C7.5 11.5858 7.5 12.0572 7.5 13V15C7.5 15.9428 7.5 16.4142 7.79289 16.7071C8.08579 17 8.55719 17 9.5 17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                     <span className="text-gray-500">{selectedFile ? selectedFile.name : 'Select excel file'}</span>
-                                    <Input id="fileImportExcel" type="file" accept='.xls,.xlsx' className='hidden' onChange={handleFileChange} ref={fileInputRef} />
+                                    <Input id="fileImportExcel" type="file" accept='.xls,.xlsx' className='hidden' onChange={handleStudentsFileChange} ref={fileInputRef} />
                                 </label>
-                                <Button type='submit' className='flex justify-center items-center text-lg mt-4 w-1/3' onClick={handleExcelFileUpload}>Add</Button>
+                                <Button type='submit' className='flex justify-center items-center text-lg mt-4 w-1/3' onClick={handleStudentsExcelFileUpload}>Add</Button>
                             </div>
                         </div>
 
