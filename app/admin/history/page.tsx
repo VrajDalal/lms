@@ -109,7 +109,7 @@ export default function History() {
                                 <span>{history.enrollmentNo}</span>
                             </div>
                             <div className='flex items-center gap-2'>
-                                <span className='font-medium w-1/3'>EmailID:</span>
+                                <span className='font-medium w-1/3'>Email Id:</span>
                                 <span>{history.studentEmail}</span>
                             </div>
                             <div className='flex items-center gap-2'>

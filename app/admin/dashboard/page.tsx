@@ -21,8 +21,6 @@ export default function DashBoard() {
     const [tokenExpired, setTokenExpired] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
-    const [isNameColumnVisible, setIsNameColumnVisible] = useState(true);
-    const [nameColumnLeft, setNameColumnLeft] = useState('0px');
     const [isNavOpen, setIsNavOpen] = useState(false);
 
     useEffect(() => {
@@ -104,7 +102,7 @@ export default function DashBoard() {
 
     return (
         <>
-            <title>Dashboard</title>
+            {/* <title>Dashboard</title> */}
             {loading && (
                 <div className="loader-overlay loader-container">
                     <Loading />
@@ -113,7 +111,7 @@ export default function DashBoard() {
             <div className={`main-content ${loading ? 'blur' : ''}`}>
                 {isAuthenticated && !tokenExpired ? (
                     <>
-                        <nav className={`sticky top-0 z-50 px-1 py-1 pt-5 pb-5 ml-auto border-2 bg-[#F8F4EF] bg-opacity-85 transition ${isScrolled ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}>
+                        <nav className={`sticky top-0 z-50 px-1 py-2 pt-5 pb-5 w-full ml-auto border-2 bg-[#F8F4EF] bg-opacity-85 transition ${isScrolled ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}>
                             <div className="py-0 px-2 flex items-center justify-between">
                                 {/* Toggle Button to open Vertical Menu */}
                                 <button onClick={handleToggleNav} className='bg-[#F8F4EF] pl-1'>

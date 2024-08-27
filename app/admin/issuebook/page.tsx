@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import Dashboard from "@/app/admin/dashboard/page"
 import ShowSuccessGif from '@/app/component/showSuccessGif/page'
 import Loading from "@/components/loading"
+import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 
 interface IStudentDetails {
     sid: number;
@@ -33,6 +34,11 @@ interface IBookIssue {
     returnDate: Date;
 }
 
+interface ISelectedBook {
+    bookNo: string
+    bookName: string;
+}
+
 export default function IssueBook() {
 
     const [searchStudentId, setSearchStudentId] = useState('')
@@ -40,22 +46,53 @@ export default function IssueBook() {
     const [showStudentDetails, setShowStudentDetails] = useState(false)
     const [studentDetails, setStudentDetails] = useState<IStudentDetails | null>(null)
     const [bookIssues, setBookIssues] = useState<IBookIssue[]>([{ bookNo: '', bookIssueDate: new Date(), bookName: '', returnDate: new Date(new Date().setDate(new Date().getDate() + 7)) }])
-    const [tempBookIssues, setTempBookIssues] = useState<IBookIssue[]>([]);
+    const [selectedBook, setSelectedBook] = useState<ISelectedBook>({ bookNo: '', bookName: '' })
+    const [searchedBook, setSearchedBook] = useState([])
+    const [isAddNewBook, setIsAddNewBook] = useState(false)
     const [inputFilled, setInputFilled] = useState(false)
     const [showContent, setShowContent] = useState(false);
     const [showSuccessGif, setShowSuccessGif] = useState(false);
-    const [showNoDataImage, setShowNoDataImage] = useState(false)
     const [addNewBookIssueBtn, setAddNewBookIssueBtn] = useState(false)
     const [isBookAdded, setIsBookAdded] = useState(false);
     const [newIssueBookIndex, setNewIssueBookIndex] = useState<number | null>(null)
     const [isRenewalBookDetailsIndex, setIsRenewalBookDetailsIndex] = useState<number | null>(null)
     const [bookIssuedDone, setBookIssuedDone] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [showCancelSvg, setShowCancelSvg] = useState(false)
 
     useEffect(() => {
         setTimeout(() => {
             setLoading(false)
         }, 2000)
+    }, [])
+
+    useEffect(() => {
+        const getBookData = async () => {
+            try {
+                const allBooksDetailsListResponse = await fetch('/api/admin/allBooksList', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'aplication/json'
+                    },
+                    credentials: 'include'
+                })
+
+                const allBooksDetailsListResult = await allBooksDetailsListResponse.json()
+                if (allBooksDetailsListResult.success) {
+                    if (allBooksDetailsListResult.datas && allBooksDetailsListResult.datas.length > 0) {
+                        setSearchedBook(allBooksDetailsListResult.datas)
+                    } else {
+                        console.error('Failed to fetch', allBooksDetailsListResult.error)
+                    }
+                } else {
+                    console.error('Failed to fetch book data:', allBooksDetailsListResult.error)
+                }
+            } catch (error) {
+                console.error('Error fetching table data:', error)
+
+            }
+        }
+        getBookData()
     }, [])
 
     const handleSearchStudentId = async (studentId: string) => {
@@ -112,7 +149,7 @@ export default function IssueBook() {
 
         for (let issue of bookIssues) {
             if (!issue.bookNo || !issue.bookIssueDate || !issue.bookName || !issue.returnDate) {
-                toast.error('Please fill all book issue details');
+                toast.info('Please fill book issue details');
                 return;
             }
         }
@@ -137,6 +174,7 @@ export default function IssueBook() {
             }
         }
 
+        console.log('Book issued:', selectedBook);
         try {
             const issueBookResponse = await fetch('/api/admin/issueBooks', {
                 method: 'POST',
@@ -179,6 +217,8 @@ export default function IssueBook() {
                     setShowContent(true);
                     setBookIssuedDone(true);
                     setNewIssueBookIndex(null);
+                    setIsBookAdded(false);
+                    setShowCancelSvg(false)
                 } else {
                     toast.error('Failed to send email');
                 }
@@ -193,6 +233,14 @@ export default function IssueBook() {
     const addNewBookIssue = () => {
         setIsBookAdded(true)
         setAddNewBookIssueBtn(true)
+
+        for (let issue of bookIssues) {
+            if (!issue.bookNo || !issue.bookIssueDate || !issue.bookName || !issue.returnDate) {
+                toast.info('Please fill the book issue details');
+                return;
+            }
+        }
+
         setBookIssues(prevIssues => {
             const newIndex = prevIssues.length
             setNewIssueBookIndex(newIndex);
@@ -204,6 +252,15 @@ export default function IssueBook() {
 
             return prevIssues.length === 0 ? [newIssueBook] : [...prevIssues, newIssueBook]
         })
+        setIsAddNewBook(true);
+        setSelectedBook({ bookNo: '', bookName: '' }); // Reset selected book
+        setShowCancelSvg(true)
+    }
+
+    const handleRemoveBookIssueIndex = (index: number) => {
+        setBookIssues(prevIssues => prevIssues.filter((_, i) => i !== index));
+        setIsBookAdded(false);
+        setShowCancelSvg(false)
     }
 
     const updateBookIssueDetails = (index: number, key: keyof IBookIssue, value: any) => {
@@ -358,7 +415,28 @@ export default function IssueBook() {
         }
     }
 
+    const handleSelectBook = (items: any) => {
+        setSelectedBook({ bookNo: items.bookNo, bookName: items.bookName })
+        setShowCancelSvg(true)
+        setBookIssues(prevIssues => {
+            const newIssues = [...prevIssues];
+            if (newIssueBookIndex !== null && newIssueBookIndex >= 0) {
+                newIssues[newIssueBookIndex] = {
+                    ...newIssues[newIssueBookIndex],
+                    bookNo: items.bookNo,
+                    bookName: items.bookName
+                };
+            }
+            return newIssues;
+        });
+    }
 
+    const items = searchedBook.map((book: any) => ({
+        id: book.bookNo, // for unique
+        name: book.bookName, // for book name suggestion
+        bookNo: book.bookNo,
+        bookName: book.bookName
+    }));
 
     //update function pending : Done
     //on click of renewal svg renewthe data according to there id show cancel button also texbox not disable use something diffrent : Done
@@ -366,9 +444,9 @@ export default function IssueBook() {
     //mail integration pending : Done
     //when i click on renewal svg then swap the date of both table : Done
     //data store in issuebook table but not inserted in history table : Done
-    //on renewal ,renewal button show after click save button not show
-    //upload book detials excel 
-    //write book name and automatically it insert the bookNo
+    //on renewal ,renewal button show and then renew the book : Done
+    //upload book detials excel  : Done
+    //write book name and automatically it insert the bookNo : Done
     //in library section add manually books and save into table also (CRUD operation ,edit quantity,delete books)
     return (
         <>
@@ -396,6 +474,12 @@ export default function IssueBook() {
                                         id='txtSearchBox'
                                         value={searchStudentId}
                                         onChange={e => setSearchStudentId(e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault()
+                                                handleSearchStudentId(searchStudentId);
+                                            }
+                                        }}
                                         placeholder='Enter student id..'
                                         className='w-full md:w-2/4 text-xl mb-2 md:mb-0'
                                     />
@@ -498,19 +582,30 @@ export default function IssueBook() {
                                                                 className="text-center md:text-left w-full"
                                                                 value={bookIssue.bookNo}
                                                                 onChange={e => handleInputChange(index, 'bookNo', e.target.value)}
-                                                                readOnly={newIssueBookIndex !== index}
+                                                                readOnly
                                                                 title={bookIssue.bookNo}
                                                             />
                                                         </div>
                                                         <div className="flex-1">
                                                             <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Book Name:</p>
-                                                            <Input
-                                                                type='text'
-                                                                className="text-center md:text-left w-full"
-                                                                value={bookIssue.bookName}
-                                                                onChange={e => handleInputChange(index, 'bookName', e.target.value)}
-                                                                readOnly={newIssueBookIndex !== index}
-                                                            />
+                                                            {newIssueBookIndex === index && isAddNewBook ? (
+                                                                <ReactSearchAutocomplete
+                                                                    items={items}
+                                                                    onSelect={handleSelectBook}
+                                                                    fuseOptions={{ keys: ["name"] }}
+                                                                    resultStringKeyName="name"
+                                                                    placeholder="Search for a book"
+                                                                // styling={{ height: '40px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                                />
+                                                            ) : (
+                                                                <Input
+                                                                    type='text'
+                                                                    className="text-center md:text-left w-full"
+                                                                    value={bookIssue.bookName}
+                                                                    onChange={e => handleInputChange(index, 'bookName', e.target.value)}
+                                                                    readOnly={newIssueBookIndex !== index}
+                                                                />
+                                                            )}
                                                         </div>
                                                         <div className="flex-1">
                                                             <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Issue Date:</p>
@@ -590,11 +685,18 @@ export default function IssueBook() {
                                                                         <path d="M14.5 16.5L14.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                                                     </svg>
                                                                 </button>
-
                                                             </>
+                                                        )}
+                                                        {isAddNewBook && index === bookIssues.length - 1 && showCancelSvg && !bookIssuedDone && (
+                                                            <button type='button' title='Cancel' className='mt-6' onClick={() => {handleRemoveBookIssueIndex(index); setIsAddNewBook(false);}}>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
+                                                                    <path d="M19.0005 4.99988L5.00049 18.9999M5.00049 4.99988L19.0005 18.9999" stroke="currentColor" stroke-width="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                </svg>
+                                                            </button>
                                                         )}
                                                     </div>
                                                 ))}
+
                                                 <button type='button' title='Add New Book' onClick={addNewBookIssue} className='w-8'>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="#000000" fill="none" className='mb-2 cursor-pointer'>
                                                         <path d="M12 8V16M16 12L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

@@ -130,7 +130,7 @@ export default function Library() {
         }
     }
 
-
+    //in library section add manually books and save into table also (CRUD operation ,edit quantity,delete books)
     //if not book data than show drag option else show buttons : done
     //in search book no,name,author on keyup event
     //on click of bookno can do PATCH or update the book details in which only Qty update
@@ -207,7 +207,7 @@ export default function Library() {
                                 )}
                             </div>
 
-                            <div className='mt-6'>
+                            <div className='mt-6 pb-8'>
                                 <div className='bg-[#F8F4EF] border-2 border-gray-300 rounded-xl shadow-2xl'>
                                     <table className='w-full text-left table-auto'>
                                         <thead className='bg-gray-200'>
@@ -254,7 +254,7 @@ export default function Library() {
                                     {selectedFile ? selectedFile.name : 'Drag and drop a file here or click to select'}
                                 </p>
                                 <div className='mt-6 space-x-4'>
-                                    <Button variant="outline" className='text-lg'>
+                                    <Button type='button' variant="outline" className='text-lg'>
                                         <label htmlFor="booksExcelFileUpload" className="cursor-pointer flex items-center">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -272,7 +272,7 @@ export default function Library() {
                                         </label>
                                     </Button>
                                     {!selectedFile && (
-                                        <Button variant="outline" className='text-lg'>
+                                        <Button type='button' variant="outline" className='text-lg'>
                                             <label htmlFor="addManualyBook" className="cursor-pointer flex items-center p-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 mr-2" viewBox="0 0 24 24" color="#000000" fill="none">
                                                     <path d="M12 8V16M16 12L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
