@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
                 <p>We are pleased to inform you that you have successfully renewed a book from our library. Here are the details:</p>
                 <p>${bookDetails}</p>
                 <p>Please make sure to return the book by the return date to avoid any late fees.</p>
+                <p>For more info http://localhost:3000/student/login</p>
                 <p>Thank you for using our library services.</p>
                 <p>Best regards,</p>
                 <p>Book issue hub</p>

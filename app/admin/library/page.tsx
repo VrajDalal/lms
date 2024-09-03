@@ -23,6 +23,15 @@ export default function Library() {
     const [dragging, setDragging] = useState(false)
     const [isDataVisible, setIsDataVisible] = useState(false)
     const [tableData, setTableData] = useState<IAddBooksList[]>([])
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [bookDetails, setbookDetails] = useState({
+        bookNo: '',
+        bookName: '',
+        bookAuthorName: '',
+        bookPublisherName: '',
+        bookQty: '',
+    })
+
 
     useEffect(() => {
         setTimeout(() => {
@@ -57,6 +66,7 @@ export default function Library() {
 
                 if (booksExcelFileUploadResult.success) {
                     toast.success('File uploaded successfully')
+                    setLoading(false)
                     setSelectedFile(null)
                     if (fileInputRef.current?.value) {
                         fileInputRef.current.value = ''
@@ -64,9 +74,11 @@ export default function Library() {
                     setIsDataVisible(true)
                     handleToRetriveBookDatas()
                 } else {
+                    setLoading(false)
                     toast.error(`Error: ${booksExcelFileUploadResult.error}`)
                 }
             } catch (error) {
+                setLoading(false)
                 console.log('Error uploading file', error)
                 toast.error('Error uploading file')
             } finally {
@@ -104,6 +116,7 @@ export default function Library() {
 
     const handleToRetriveBookDatas = async () => {
         try {
+            setLoading(true)
             const allBooksDetailsListResponse = await fetch('/api/admin/allBooksList', {
                 method: 'GET',
                 headers: {
@@ -114,20 +127,43 @@ export default function Library() {
 
             const allBooksDetailsListResult = await allBooksDetailsListResponse.json()
             if (allBooksDetailsListResult.success) {
+                setLoading(false)
                 setTableData(allBooksDetailsListResult.datas)
                 if (allBooksDetailsListResult.datas && allBooksDetailsListResult.datas.length > 0) {
                     setIsDataVisible(true)
+                    setLoading(false)
                 } else {
                     setIsDataVisible(false)
+                    setLoading(false)
                 }
             } else {
                 console.error('Failed to fetch book data:', allBooksDetailsListResult.error)
                 setIsDataVisible(false)
+                setLoading(false)
             }
         } catch (error) {
             console.error('Error fetching table data:', error)
             setIsDataVisible(false)
+            setLoading(false)
         }
+    }
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target
+        setbookDetails(prevDetails => ({
+            ...prevDetails,
+            [id]: value
+        }))
+    }
+
+    const handleReset = () => {
+        setbookDetails({
+            bookNo: '',
+            bookName: '',
+            bookAuthorName: '',
+            bookPublisherName: '',
+            bookQty: '',
+        })
     }
 
     //in library section add manually books and save into table also (CRUD operation ,edit quantity,delete books)
@@ -135,6 +171,8 @@ export default function Library() {
     //in search book no,name,author on keyup event
     //on click of bookno can do PATCH or update the book details in which only Qty update
     //in row end put delete for remove the book
+    //if student issue a book than also update the qty
+
     return (
         <>
             <title>Library</title>
@@ -145,7 +183,7 @@ export default function Library() {
             )}
             <div className={`main-content ${loading ? 'blur' : ''}`}>
                 <DashBoard />
-                <div className="flex flex-col pl-20 md:pl-24 pt-10 min-h-screen lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5]">
+                <div className="flex flex-col pl-20 pt-20 md:pl-24 min-h-screen lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5]">
                     <div className="text-5xl font-bold">
                         <h1>Library</h1>
                     </div>
@@ -195,7 +233,7 @@ export default function Library() {
                                     </label>
                                 </Button>
                                 {!selectedFile && (
-                                    <Button variant="secondary" className='text-lg'>
+                                    <Button variant="secondary" className='text-lg' onClick={() => setIsModalOpen(true)}>
                                         <label htmlFor="addManualyBook" className="cursor-pointer flex items-center p-2">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="w-6 mr-2" viewBox="0 0 24 24" color="#000000" fill="none">
                                                 <path d="M12 8V16M16 12L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -204,6 +242,90 @@ export default function Library() {
                                             <span>Add a single book</span>
                                         </label>
                                     </Button>
+                                )}
+
+                                {/* Modal */}
+                                {isModalOpen && (
+                                    <div className="fixed inset-0 bg-gray-900  bg-opacity-50 flex items-center justify-center">
+                                        <div className="bg-[#FCFAF5] md:p-6 lg:p-6 xl:p-10 justify-center items-center rounded-lg shadow-lg w-full max-w-sm sm:max-w-sm md:max-w-md lg:max-w-5xl xl:max-w-sxl relative">
+                                            {/* Cancel Button */}
+                                            <button
+                                                className="absolute top-4 right-4 text-gray-600 md:text-2xl lg:text-3xl hover:text-gray-800"
+                                                onClick={() => setIsModalOpen(false)}
+                                            >
+                                                &times;
+                                            </button>
+                                            <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl lg:mb-4 font-bold mb-4">Enter BookDetails:-</h2>
+                                            <hr className='bg-gray-300 mb-4 lg:mb-8' />
+                                            <form>
+                                                <div className="mb-4 lg:mb-12">
+                                                    <div className="flex flex-col md:flex-row lg:flex-row gap-4">
+                                                        {/* Book No Field */}
+                                                        <div className="flex-1">
+                                                            <label htmlFor="bookNo" className="block text-left text-sm lg:text-lg font-medium">Book No</label>
+                                                            <Input id="bookNo" type="text" placeholder='Enter Book No' className="mt-1 block w-full" value={bookDetails.bookNo} onChange={handleInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookNo && !/^[0-9]+$/.test(bookDetails.bookNo) && (
+                                                                <p className='mt-1 text-red-500 text-xs'>Please Enter Numbers Only</p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Book Name Field */}
+                                                        <div className="flex-1">
+                                                            <label htmlFor="bookName" className="block text-left text-sm lg:text-lg font-medium">Book Name</label>
+                                                            <Input id="bookName" type="text" placeholder='Enter Book Name' className="mt-1 block w-full" value={bookDetails.bookName} onChange={handleInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookName && !/^[A-Za-z]+$/.test(bookDetails.bookName) && (
+                                                                <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Author Name Field */}
+                                                        <div className="flex-1">
+                                                            <label htmlFor="bookAuthorName" className="block text-left text-sm lg:text-lg font-medium">Author Name</label>
+                                                            <Input id="bookAuthorName" type="text" placeholder='Enter Author Name' className="mt-1 block w-full" value={bookDetails.bookAuthorName} onChange={handleInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookAuthorName && !/^[A-Za-z]+$/.test(bookDetails.bookAuthorName) && (
+                                                                <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-4 lg:mb-12">
+                                                    <div className="flex flex-col md:flex-row lg:flex-row gap-4 justify-center lg:justify-center">
+                                                        {/* Publisher Name Field */}
+                                                        <div className="flex-1 lg:flex-none lg:w-1/4">
+                                                            <label htmlFor="bookPublisherName" className="block text-left text-sm lg:text-lg font-medium">Publisher Name</label>
+                                                            <Input id="bookPublisherName" type="text" placeholder='Enter Publisher Name' className="mt-1 block w-full" value={bookDetails.bookPublisherName} onChange={handleInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookPublisherName && !/^[A-Za-z]+$/.test(bookDetails.bookPublisherName) && (
+                                                                <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Quantity Field */}
+                                                        <div className="flex-1 lg:flex-none lg:w-1/4">
+                                                            <label htmlFor="bookQty" className="block text-left text-sm lg:text-lg font-medium">Quantity</label>
+                                                            <Input id="bookQty" type="text" placeholder='Enter Quantity' className="mt-1 block w-full" value={bookDetails.bookQty} onChange={handleInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookQty && !/^[0-9]+$/.test(bookDetails.bookQty) && (
+                                                                <p className="mt-1 text-red-500 text-xs">Please enter only numbers.</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col md:flex-row justify-center w-full gap-6 mt-6">
+                                                    <Button type="submit" className="w-40 md:w-auto lg:w-52">Add Book</Button>
+                                                    <Button type="button" className="w-40 md:w-28 lg:w-52" onClick={handleReset}>Reset</Button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <form method="dialog" className="modal-backdrop">
+                                            <button>close</button>
+                                        </form>
+                                    </div>
                                 )}
                             </div>
 
@@ -272,7 +394,7 @@ export default function Library() {
                                         </label>
                                     </Button>
                                     {!selectedFile && (
-                                        <Button type='button' variant="outline" className='text-lg'>
+                                        <Button type='button' variant="outline" className='text-lg' onClick={() => setIsModalOpen(true)}>
                                             <label htmlFor="addManualyBook" className="cursor-pointer flex items-center p-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 mr-2" viewBox="0 0 24 24" color="#000000" fill="none">
                                                     <path d="M12 8V16M16 12L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

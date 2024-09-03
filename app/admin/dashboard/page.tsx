@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import ShowExpiryModal from '@/app/component/showExpiryModal'
+import ShowExpiryModal from '@/app/component/showAdminExpiryModal'
 import { useRouter } from 'next/navigation'
 import nookies from "nookies"
 import jwt, { JwtPayload } from "jsonwebtoken"
@@ -44,7 +44,7 @@ export default function DashBoard() {
         }
     }, [])
 
-    const getAdminToken = jwt.decode(adminToken) as JwtPayload | null
+    // const getAdminToken = jwt.decode(adminToken) as JwtPayload | null
 
     useEffect(() => {
         const checkTokenExpiration = async () => {
@@ -111,7 +111,7 @@ export default function DashBoard() {
             <div className={`main-content ${loading ? 'blur' : ''}`}>
                 {isAuthenticated && !tokenExpired ? (
                     <>
-                        <nav className={`sticky top-0 z-50 px-1 py-2 pt-5 pb-5 w-full ml-auto border-2 bg-[#F8F4EF] bg-opacity-85 transition ${isScrolled ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}>
+                         <nav className={`fixed left-0 right-0 top-0 z-50 px-1 py-1 pt-5 pb-5 ml-auto border-2 bg-[#F8F4EF] bg-opacity-85 transition ${isScrolled ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}>
                             <div className="py-0 px-2 flex items-center justify-between">
                                 {/* Toggle Button to open Vertical Menu */}
                                 <button onClick={handleToggleNav} className='bg-[#F8F4EF] pl-1'>

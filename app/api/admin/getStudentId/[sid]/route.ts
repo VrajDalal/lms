@@ -8,7 +8,7 @@ export async function GET(req: NextRequest, { params }: { params: { sid: string 
     const { sid } = params
 
     if (!sid) {
-        return NextResponse.json({ success: false, message: 'Invalid id or id not matched' }, { status: 409 })
+        return NextResponse.json({ success: false, message: 'Invalid id or id not matched' }, { status: 400 })
     }
 
     await connect()

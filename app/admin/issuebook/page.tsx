@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -14,6 +15,7 @@ import Dashboard from "@/app/admin/dashboard/page"
 import ShowSuccessGif from '@/app/component/showSuccessGif/page'
 import Loading from "@/components/loading"
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface IStudentDetails {
     sid: number;
@@ -60,11 +62,21 @@ export default function IssueBook() {
     const [loading, setLoading] = useState(true)
     const [showCancelSvg, setShowCancelSvg] = useState(false)
 
+    const router = useRouter()
+    const searchParams = useSearchParams();
+    const studentId = searchParams.get('studentId');
+
     useEffect(() => {
         setTimeout(() => {
             setLoading(false)
         }, 2000)
     }, [])
+
+    useEffect(() => {
+        if (studentId) {
+            handleSearchStudentId(studentId);
+        }
+    }, [studentId]);
 
     useEffect(() => {
         const getBookData = async () => {
@@ -103,6 +115,7 @@ export default function IssueBook() {
             return
         }
         try {
+            setLoading(true)
             const searchIdResponse = await fetch(`/api/admin/getStudentId/${studentId}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -111,6 +124,7 @@ export default function IssueBook() {
             const searchIdResult = await searchIdResponse.json()
 
             if (searchIdResult.success) {
+                setLoading(false)
                 setStudentIdFound(true)
                 setShowStudentDetails(true)
                 setStudentDetails(searchIdResult.isPresentStudentId)
@@ -122,15 +136,22 @@ export default function IssueBook() {
                         returnDate: isValid(parse(item.returnDate, 'yyyy-MM-dd', new Date())) ? parse(item.returnDate, 'yyyy-MM-dd', new Date()) : new Date(),
                     })) : []
                 setBookIssues(formattedData)
+
+                router.push(`/admin/issuebook?studentId=${encodeURIComponent(studentId)}`)
             } else {
                 toast.error('Student ID not found')
+                setLoading(false)
                 setStudentIdFound(false)
                 setShowStudentDetails(false)
                 setStudentDetails(null)
                 setBookIssues([])
+                router.push(`/admin/issuebook?studentId=null`)
             }
         } catch (error) {
+            setLoading(false)
             toast.error('Student ID not valid')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -174,8 +195,8 @@ export default function IssueBook() {
             }
         }
 
-        console.log('Book issued:', selectedBook);
         try {
+            setLoading(true)
             const issueBookResponse = await fetch('/api/admin/issueBooks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -207,6 +228,7 @@ export default function IssueBook() {
 
                 const studentIssueBookMailResult = await studentIssueBookMailResponse.json();
                 if (studentIssueBookMailResult.success) {
+                    setLoading(false)
                     toast.success('Book issued successfully');
                     setShowSuccessGif(true);
                     setBookIssues([{ bookNo: '', bookIssueDate: new Date(), bookName: '', returnDate: new Date(new Date().setDate(new Date().getDate() + 7)) }]);
@@ -220,13 +242,18 @@ export default function IssueBook() {
                     setIsBookAdded(false);
                     setShowCancelSvg(false)
                 } else {
+                    setLoading(false)
                     toast.error('Failed to send email');
                 }
             } else {
+                setLoading(false)
                 toast.error('Failed to issue book');
             }
         } catch (error) {
+            setLoading(false)
             toast.error('An error occurred while issuing the book');
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -307,6 +334,7 @@ export default function IssueBook() {
         const updatedBookIssueDetails = bookIssues[index];
         console.log(updatedBookIssueDetails)
         try {
+            setLoading(true)
             const updateBookIssueDetailsResponse = await fetch(`/api/admin/renewalBookIssueDetails/${sid}/${updatedBookIssueDetails.bookNo}`, {
                 method: 'PATCH',
                 headers: {
@@ -324,6 +352,7 @@ export default function IssueBook() {
             const updateBookIssueDetailsResult = await updateBookIssueDetailsResponse.json();
             console.log(updateBookIssueDetailsResult)
             if (updateBookIssueDetailsResult.success) {
+                router.push(`/admin/issuebook?studentId=${encodeURIComponent(sid)}&bookNo=${encodeURIComponent(updatedBookIssueDetails.bookNo)}`)
                 const { bookIssueDate, returnDate } = updateBookIssueDetailsResult.data
                 const renewedBookDetails = `
             Book Acc No: <b>${updatedBookIssueDetails.bookNo}</b><br>
@@ -347,26 +376,33 @@ export default function IssueBook() {
 
                 const renewedBookIssueDetailsResult = await renewedBookIssueDetailsResponse.json();
                 if (renewedBookIssueDetailsResult.success) {
+                    setLoading(false)
                     toast.success('Renewal done successfully');
                     await handleSearchStudentId(searchStudentId);
                     setBookIssuedDone(true);
                     setNewIssueBookIndex(null);
                 } else {
+                    setLoading(false)
                     toast.success('Renewal done successfully but mail not sent');
                 }
             } else {
+                setLoading(false)
                 toast.error('Error at the renewal time');
             }
         } catch (error) {
+            setLoading(false)
             console.error('Error in book issue renewal:', error);
             toast.error("Error in book issue renewal");
         } finally {
             setIsRenewalBookDetailsIndex(null);
+            setLoading(false)
         }
     }
 
     const deleteStudentBookIssueDetails = async (sid: number, bookNo: string) => {
         try {
+            setLoading(true)
+            router.push(`/admin/issuebook?studentId=${encodeURIComponent(sid)}&bookNo=${encodeURIComponent(bookNo)}`)
             const deleteStudentBookIssueResponse = await fetch(`/api/admin/deleteIssueBook/${sid}/${bookNo}`, {
                 method: 'DELETE',
                 headers: {
@@ -399,17 +435,19 @@ export default function IssueBook() {
 
                 const deleteBookIssuedDetailResult = await deleteBookIssuedDetailResponse.json()
                 if (deleteBookIssuedDetailResult.success) {
+                    setLoading(false)
                     toast.success(`"${deletedIssedBook?.bookName}" book details deleted`)
-                    // setShowSuccessGif(true)
                     setBookIssues(prevIssues => prevIssues.filter(issue => issue.bookNo !== bookNo))
-                    // setTimeout(() => setShowSuccessGif(false), 3000)
                 } else {
+                    setLoading(false)
                     toast.success('Issued book deleted but mail not send')
                 }
             } else {
+                setLoading(false)
                 toast.error("Not deleting issued book")
             }
         } catch (error) {
+            setLoading(false)
             console.error('Error deleting book issue:', error);
             toast.error("Error in deleting issued book")
         }
@@ -458,7 +496,7 @@ export default function IssueBook() {
             )}
             <div className={`main-content ${loading ? 'blur' : ''}`}>
                 <Dashboard />
-                <div className='flex flex-col pl-20  md:pl-24 lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
+                <div className='flex flex-col pl-20 pt-20 md:pl-24 lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
                     <div className="text-5xl font-bold mt-4">
                         <h1>Issue Book</h1>
                     </div>
@@ -688,9 +726,9 @@ export default function IssueBook() {
                                                             </>
                                                         )}
                                                         {isAddNewBook && index === bookIssues.length - 1 && showCancelSvg && !bookIssuedDone && (
-                                                            <button type='button' title='Cancel' className='mt-6' onClick={() => {handleRemoveBookIssueIndex(index); setIsAddNewBook(false);}}>
+                                                            <button type='button' title='Cancel' className='mt-6' onClick={() => { handleRemoveBookIssueIndex(index); setIsAddNewBook(false); }}>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
-                                                                    <path d="M19.0005 4.99988L5.00049 18.9999M5.00049 4.99988L19.0005 18.9999" stroke="currentColor" stroke-width="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                    <path d="M19.0005 4.99988L5.00049 18.9999M5.00049 4.99988L19.0005 18.9999" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                                                 </svg>
                                                             </button>
                                                         )}

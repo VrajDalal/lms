@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
                 <p>Dear ${studentName},</p>
                 <p>We are pleased to inform you that you have return issued a book from our library. Here are the details:</p>
                 <p>${bookDetails}</p>
+                <p>For more info http://localhost:3000/student/login</p>
                 <p>Thank you for using our library services.</p>
                 <p>Best regards,</p>
                 <p>Book issue hub</p>

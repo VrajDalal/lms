@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Libre_Baskerville } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
+import StudentLayout from "./studentLayout"; // Import the ClientLayout component
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Libre_Baskerville({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
   title: "Book Issue Hub",
-  description: "use this platform for issue the books from library",
+  description: "Use this platform to issue books from the library",
   icons: {
     shortcut: {
-      url: '/favicon.ico',
-      type: 'image/x-icon'
-    }
-  }
+      url: "/favicon.ico",
+      type: "image/x-icon",
+    },
+  },
 };
 
 export default function RootLayout({
@@ -23,14 +23,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className}, font-serif`}>
-        <Toaster position="bottom-center" richColors closeButton />
-        <div className="hidden md:block">
-          {children}
-        </div>
-        <div className="block md:hidden text-center text-xl p-5">
-          This website is not available on small devices. Please use a tablet or large device.
-        </div>
+      <body className={inter.className}>
+        <StudentLayout>{children}</StudentLayout>
       </body>
     </html>
   );

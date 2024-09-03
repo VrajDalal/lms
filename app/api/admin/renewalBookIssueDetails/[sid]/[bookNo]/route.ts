@@ -8,7 +8,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { sid: numbe
     const { sid, bookNo } = params;
 
     if (!sid || !bookNo) {
-        return NextResponse.json({ success: false, message: 'Invalid sid or bookNo' }, { status: 409 });
+        return NextResponse.json({ success: false, message: 'Invalid sid or bookNo' }, { status: 400 });
     }
 
     try {

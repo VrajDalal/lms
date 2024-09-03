@@ -16,7 +16,7 @@ import { Pagination, Autoplay, Navigation } from "swiper/modules";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import Loading from "@/components/loading"
 
-export default function Admin() {
+export default function AdminLogin() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -29,10 +29,10 @@ export default function Admin() {
         }, 2000)
     }, [])
 
-    // useAuth()
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setLoading(true)
             if (!username || !password) {
                 toast.info("Username and password are mandatory");
                 return;
@@ -49,17 +49,18 @@ export default function Admin() {
 
             const adminLoginResult = await adminLoginResponse.json()
             if (adminLoginResult.success) {
+                setLoading(false)
                 router.push('/admin/dashboard');
             } else {
+                setLoading(false)
                 toast.error("Invalid username or password");
             }
         } catch (error) {
+            setLoading(false)
             toast.error("Authentication failed");
+        } finally{
+            setLoading(false)
         }
-    };
-
-    const handleContextMenu = (e: React.FormEvent) => {
-        e.preventDefault();
     };
 
     const env = {

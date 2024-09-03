@@ -205,7 +205,7 @@ export default function History() {
             )}
             <div className={`main-content ${loading ? 'blur' : ''}`}>
                 <DashBoard />
-                <div className='flex flex-col pl-20 md:pl-24 lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
+                <div className='flex flex-col pl-20 pt-20 md:pl-24 lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5] min-h-screen'>
                     <div className="text-5xl font-bold mt-4">
                         <h1>History</h1>
                     </div>
