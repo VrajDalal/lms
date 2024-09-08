@@ -50,8 +50,6 @@ export default function StudentDashboardPage() {
     const cookies = nookies.get()
     const studentToken = cookies.studentToken
 
-    console.log(studentToken);
-
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [loading, setLoading] = useState(false)
     const [tokenExpired, setTokenExpired] = useState(false)
@@ -59,6 +57,7 @@ export default function StudentDashboardPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isDataVisible, setIsDataVisible] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [isScrolled, setIsScrolled] = useState(false)
     const [isVisible, setIsVisible] = useState(false);
     const [tableData, setTableData] = useState<IAvailableBooks[]>([]);
     const [studentsIssuedBooksHistory, setStudentsIssuedBooksHistory] = useState<IBookIssuedHistory[]>([])
@@ -66,13 +65,16 @@ export default function StudentDashboardPage() {
     const [studentDetails, setStudentDetails] = useState<IStudentDetails | null>(null)
     const [studentName, setStudentName] = useState('');
     const [studentEmail, setEmail] = useState('');
+    const [searchBookDetails, setSearchBookDetails] = useState('')
+    const [filteredBooks, setFilteredBooks] = useState<IAvailableBooks[]>([]);
+    const [searchStudentIssuedBook, setSearchStudentIssuedBook] = useState('')
+    const [filteredStudentIssuedBook, setFilteredStudentIssuedBook] = useState<IBookIssuedHistory[]>([]);
+
 
     const itemsPerPage = 5;
     const profileModalRef = useRef<HTMLDialogElement>(null);
 
-    const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY || ""
     const verifyToken = jwt.decode(studentToken) as JwtPayload
-    console.log(verifyToken?.sid)
 
     useEffect(() => {
         setTimeout(() => {
@@ -290,9 +292,7 @@ export default function StudentDashboardPage() {
                 },
                 credentials: 'include'
             })
-            console.log(studentDetailsResponse);
             const studentDetailsResult = await studentDetailsResponse.json()
-            console.log(studentDetailsResult);
 
             if (studentDetailsResult.success) {
                 setStudentDetails(studentDetailsResult.datas)
@@ -300,9 +300,56 @@ export default function StudentDashboardPage() {
                 setStudentDetails(null)
             }
         } catch (error) {
-
+            console.error(error, 'Falied to find Student detials')
         }
     }
+
+    const displayBooks = searchBookDetails ? filteredBooks : tableData;
+    const searchBook = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        try {
+
+            if (searchBookDetails.trim() === '') {
+                setFilteredBooks([]); // Clear filtered books if search is empty
+                return;
+            }
+
+            const filtered = tableData.filter((book) =>
+                book.bookName.toLowerCase().includes(searchBookDetails.toLowerCase()) ||
+                book.bookNo.toString().includes(searchBookDetails) ||
+                (book.bookAuthorName && book.bookAuthorName.toLowerCase().includes(searchBookDetails.toLowerCase()))
+            );
+            setFilteredBooks(filtered);
+            console.log(filtered);
+        } catch (error) {
+            console.error('Error fetching books details:', error);
+        }
+    }
+
+    const displayStudentIssuedBooks = searchStudentIssuedBook ? filteredStudentIssuedBook : studentsIssuedBooksHistory;
+    const searchStudentIssuedBookDetails = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        try {
+
+            if (searchStudentIssuedBook.trim() === '') {
+                setFilteredStudentIssuedBook([]); // Clear filtered books if search is empty
+                return;
+            }
+
+            const filtered = studentsIssuedBooksHistory.filter((book) =>
+                book.bookName.toLowerCase().includes(searchStudentIssuedBook.toLowerCase()) ||
+                book.bookNo.toString().includes(searchStudentIssuedBook)
+            );
+            setFilteredStudentIssuedBook(filtered);
+            console.log(filtered);
+        } catch (error) {
+            console.error('Error fetching books details:', error);
+        }
+    }
+
+
     return (
         <>
             <title>Student Dashboard</title>
@@ -326,7 +373,7 @@ export default function StudentDashboardPage() {
                 {isAuthenticated && !tokenExpired ? (
                     <>
                         {/* Navigation Bar */}
-                        < nav className="bg-sky-400 p-4 Z-50 fixed w-full">
+                        < nav className={`bg-sky-400 left-0 right-0 p-4 Z-50 top-0 fixed ml-auto bg-opacity-75 transition ${isScrolled ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}>
                             <div className="px-4 mx-auto flex items-center justify-between">
                                 {/* Left Section */}
                                 <div className="flex items-center w-full lg:w-auto lg:justify-start lg:relative lg:left-0">
@@ -488,7 +535,7 @@ export default function StudentDashboardPage() {
 
                             {/* Library Section */}
                             <section id='library' className=' sm:py-7 md:py-8 lg:py-10 px-4 md:px-8 lg:px-16'>
-                                <div className='pt-16 text-center text-xl md:text-3xl lg:text-5xl text-gray-800'>
+                                <div className='pt-30 text-center text-xl md:text-3xl lg:text-5xl text-gray-800'>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" color="#000000" fill="none" className='text-center inline-block text-gray-800 h-6 w-6 md:h-10 md:w-10 lg:h-12 lg:w-12'>
                                         <path d="M3 11H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         <path d="M3 14V8C3 5.17157 3 3.75736 3.93037 2.87868C4.86073 2 6.35814 2 9.35294 2H14.6471C17.6419 2 19.1393 2 20.0696 2.87868C21 3.75736 21 5.17157 21 8V14C21 16.8284 21 18.2426 20.0696 19.1213C19.1393 20 17.6419 20 14.6471 20H9.35294C6.35814 20 4.86073 20 3.93037 19.1213C3 18.2426 3 16.8284 3 14Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -507,20 +554,16 @@ export default function StudentDashboardPage() {
                                             Search:
                                         </label>
                                         <Input
-                                            className="flex-grow sm:flex-grow-0 sm:w-1/3 md:w-4/6 lg:w-4/12 text-xs md:text-base lg:text-lg"
+                                            className="flex-grow sm:flex-grow-0 sm:w-1/3 md:w-4/6 lg:w-1/1 text-xs md:text-base lg:text-lg"
                                             placeholder="Enter Book No/Book Name/Author/Publisher"
+                                            value={searchBookDetails}
+                                            onChange={e => setSearchBookDetails(e.target.value)}
+                                            onKeyUp={searchBook}
                                         />
-                                        <button>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" className="h-6 w-6 md:h-10 md:w-10 lg:h-12 lg:w-12">
-                                                <path d="M14 14L16.5 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                                                <path d="M16.4333 18.5252C15.8556 17.9475 15.8556 17.0109 16.4333 16.4333C17.0109 15.8556 17.9475 15.8556 18.5252 16.4333L21.5667 19.4748C22.1444 20.0525 22.1444 20.9891 21.5667 21.5667C20.9891 22.1444 20.0525 22.1444 19.4748 21.5667L16.4333 18.5252Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                <path d="M16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16C12.866 16 16 12.866 16 9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                                            </svg>
-                                        </button>
                                     </div>
 
                                     <div className='mt-6 w-full'>
-                                        {isDataVisible ? (
+                                        {isDataVisible && displayBooks.length > 0 ? (
                                             <div className='bg-[#F8F4EF] overflow-x-auto border-2 border-gray-300 rounded-xl shadow-2xl'>
                                                 <table className='w-full text-left table-auto'>
                                                     <thead className='bg-gray-200 text-[12px] md:text-base lg:text-xl'>
@@ -533,8 +576,8 @@ export default function StudentDashboardPage() {
                                                         </tr>
                                                     </thead>
                                                     <tbody className='divide-y text-[11px] md:text-base lg:text-lg   divide-gray-300'>
-                                                        {currentItems.map((bookDetails, index) => (
-                                                            <tr key={index} className='hover:bg-gray-300 text-center cursor-pointer'>
+                                                        {displayBooks.map((bookDetails) => (
+                                                            <tr key={bookDetails.bookNo} className='hover:bg-gray-300 text-center cursor-pointer'>
                                                                 <td className='p-4'>{bookDetails.bookNo}</td>
                                                                 <td className='p-4'>{bookDetails.bookName}</td>
                                                                 <td className='p-4'>{bookDetails.bookAuthorName}</td>
@@ -542,7 +585,6 @@ export default function StudentDashboardPage() {
                                                                 <td className='p-4 text-center'>{bookDetails.bookQty}</td>
                                                             </tr>
                                                         ))}
-
                                                     </tbody>
                                                 </table>
                                                 <div className='flex justify-center mt-4 items-center'>
@@ -577,7 +619,12 @@ export default function StudentDashboardPage() {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <p>No books available</p>
+                                            <div className="flex justify-center items-center h-64 mt-8">
+                                                <div className="text-center">
+                                                    <Image src="/no-data.png" alt="No data found" priority width={300} height={300} className="mx-auto mb-4" />
+                                                    <p className="text-gray-600 text-xl font-semibold -mt-12 mb-4">Book not found.</p>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -598,20 +645,18 @@ export default function StudentDashboardPage() {
                                             Search:
                                         </label>
                                         <Input
-                                            className="flex-grow sm:flex-grow-0 sm:w-1/3 md:w-4/6 lg:w-4/12 text-xs md:text-base lg:text-lg"
+                                            className="flex-grow sm:flex-grow-0 sm:w-1/3 md:w-4/6 lg:w-1/1 text-xs md:text-base lg:text-lg"
                                             placeholder="Enter Book No/Book Name/Author/Publisher"
+                                            value={searchStudentIssuedBook}
+                                            onChange={e => setSearchStudentIssuedBook(e.target.value)}
+                                            onKeyUp={searchStudentIssuedBookDetails}
                                         />
-                                        <button>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" className="h-6 w-6 md:h-10 md:w-10 lg:h-12 lg:w-12">
-                                                <path d="M14 14L16.5 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                                                <path d="M16.4333 18.5252C15.8556 17.9475 15.8556 17.0109 16.4333 16.4333C17.0109 15.8556 17.9475 15.8556 18.5252 16.4333L21.5667 19.4748C22.1444 20.0525 22.1444 20.9891 21.5667 21.5667C20.9891 22.1444 20.0525 22.1444 19.4748 21.5667L16.4333 18.5252Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                <path d="M16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16C12.866 16 16 12.866 16 9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                                            </svg>
-                                        </button>
                                     </div>
                                 </div>
+
+
                                 <div className='mt-6'>
-                                    {isDataVisible ? (
+                                    {isDataVisible && displayStudentIssuedBooks.length > 0 ? (
                                         <div className='bg-[#F8F4EF] overflow-x-auto border-2 border-gray-300 rounded-xl shadow-2xl'>
                                             <table className='w-full text-left table-auto'>
                                                 <thead className='bg-gray-200 text-[12px] md:text-base lg:text-xl'>
@@ -623,8 +668,8 @@ export default function StudentDashboardPage() {
                                                     </tr>
                                                 </thead>
                                                 <tbody className='divide-y text-[11px] md:text-base lg:text-lg divide-gray-300'>
-                                                    {studentsIssuedBooksHistory.map((bookDetails, index) => (
-                                                        <tr key={index} className='hover:bg-gray-300 text-center cursor-pointer'>
+                                                    {displayStudentIssuedBooks.map((bookDetails) => (
+                                                        <tr key={bookDetails.bookNo} className='hover:bg-gray-300 text-center cursor-pointer'>
                                                             <td className='p-4'>{bookDetails.bookNo}</td>
                                                             <td className='p-4'>{bookDetails.bookName}</td>
                                                             <td className='p-4'>{bookDetails.bookIssueDate}</td>
@@ -663,14 +708,19 @@ export default function StudentDashboardPage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <p>No books available</p>
+                                        <div className="flex justify-center items-center h-64 mt-8">
+                                            <div className="text-center">
+                                                <Image src="/no-data.png" alt="No data found" priority width={300} height={300} className="mx-auto mb-4" />
+                                                <p className="text-gray-600 text-xl font-semibold -mt-12 mb-4">Book not found.</p>
+                                            </div>
+                                        </div>
                                     )}
 
                                 </div>
                             </section>
 
                             {/* Contact Us */}
-                            <section id='contactus' className=' sm:py-7 md:py-8 lg:py-10 px-4 md:px-8 lg:px-16'>
+                            <section id='contactus' className='sm:py-7 md:py-8 lg:py-10 px-4 md:px-8 lg:px-16'>
                                 <div className='rounded-xl shadow-2xl'>
                                     <div className='pt-20 text-center md:text-3xl lg:text-5xl text-gray-800'>
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" color="#000000" fill="none" className='text-center inline-block text-gray-800 h-6 w-6 md:h-10 md:w-10 lg:h-12 lg:w-12'>
@@ -681,7 +731,7 @@ export default function StudentDashboardPage() {
                                         </svg>
                                         <span>Contact Us</span>
                                     </div>
-                                    <div className="flex  ">
+                                    <div className="flex">
 
                                         {/* Image Carousel */}
                                         <div className="hidden lg:flex justify-center mt-8 pl-5 items-center w-full md:w-1/2 h-full rounded-md">
@@ -733,33 +783,33 @@ export default function StudentDashboardPage() {
                                                         <label htmlFor="message" className="block text-sm md:text-base lg:text-xl font-medium mb-2">Message:</label>
                                                         <textarea id="message" name="message" placeholder='Enter Message...' className="p-2 border mb-2 border-gray-300 rounded w-full h-40" required></textarea>
                                                     </div>
-                                                    <button type="submit" className="w-full px-3 py-1 mx-1 rounded disabled:opacity-50 text-xs md:text-sm lg:text-base mb-2  bg-blue-500 text-white">Send</button>
+                                                    <button type="submit" className=" px-3 py-1 mx-1 rounded disabled:opacity-50 text-xs md:text-sm lg:text-base mb-2  bg-blue-500 text-white">Send</button>
                                                 </form>
                                             </div>
-
-
-                                        </div>
-                                    </div>
-                                    <div className=' pb-8 lg:py-10 text-center'>
-                                        <h2 className="text-base md:text-xl lg:text-3xl font-semibold mb-2">Follow Us</h2>
-                                        <p className='text-sm md:text-lg lg:text-lg'>Connect with us on our social media channels:</p>
-                                        <div className="flex justify-center items-center space-x-4 mt-2 ">
-                                            <a href="https://facebook.com" className="text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none" >
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.18182 10.3333C5.20406 10.3333 5 10.5252 5 11.4444V13.1111C5 14.0304 5.20406 14.2222 6.18182 14.2222H8.54545V20.8889C8.54545 21.8081 8.74951 22 9.72727 22H12.0909C13.0687 22 13.2727 21.8081 13.2727 20.8889V14.2222H15.9267C16.6683 14.2222 16.8594 14.0867 17.0631 13.4164L17.5696 11.7497C17.9185 10.6014 17.7035 10.3333 16.4332 10.3333H13.2727V7.55556C13.2727 6.94191 13.8018 6.44444 14.4545 6.44444H17.8182C18.7959 6.44444 19 6.25259 19 5.33333V3.11111C19 2.19185 18.7959 2 17.8182 2H14.4545C11.191 2 8.54545 4.48731 8.54545 7.55556V10.3333H6.18182Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                                            </svg></a>
-                                            <a href="https://twitter.com" className="text-blue-400"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none" >
-                                                <path d="M2 18.5C3.76504 19.521 5.81428 20 8 20C14.4808 20 19.7617 14.8625 19.9922 8.43797L22 4.5L18.6458 5C17.9407 4.37764 17.0144 4 16 4C13.4276 4 11.5007 6.51734 12.1209 8.98003C8.56784 9.20927 5.34867 7.0213 3.48693 4.10523C2.25147 8.30185 3.39629 13.3561 6.5 16.4705C6.5 17.647 3.5 18.3488 2 18.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                                            </svg></a>
-                                            <a href="https://instagram.com" className="text-pink-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none" >
-                                                <path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                                                <path d="M16.5 12C16.5 14.4853 14.4853 16.5 12 16.5C9.51472 16.5 7.5 14.4853 7.5 12C7.5 9.51472 9.51472 7.5 12 7.5C14.4853 7.5 16.5 9.51472 16.5 12Z" stroke="currentColor" strokeWidth="1.5" />
-                                                <path d="M17.5078 6.5L17.4988 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg></a>
                                         </div>
                                     </div>
                                 </div >
                             </section >
 
+
+
+                            <div className='pb-8 lg:py-10 text-center'>
+                                <h2 className="text-base md:text-xl lg:text-3xl font-semibold mb-2">Follow Us</h2>
+                                <p className='text-sm md:text-lg lg:text-lg'>Connect with us on our social media channels:</p>
+                                <div className="flex justify-center items-center space-x-4 mt-2 ">
+                                    <a href="https://facebook.com" className="text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none" >
+                                        <path fillRule="evenodd" clipRule="evenodd" d="M6.18182 10.3333C5.20406 10.3333 5 10.5252 5 11.4444V13.1111C5 14.0304 5.20406 14.2222 6.18182 14.2222H8.54545V20.8889C8.54545 21.8081 8.74951 22 9.72727 22H12.0909C13.0687 22 13.2727 21.8081 13.2727 20.8889V14.2222H15.9267C16.6683 14.2222 16.8594 14.0867 17.0631 13.4164L17.5696 11.7497C17.9185 10.6014 17.7035 10.3333 16.4332 10.3333H13.2727V7.55556C13.2727 6.94191 13.8018 6.44444 14.4545 6.44444H17.8182C18.7959 6.44444 19 6.25259 19 5.33333V3.11111C19 2.19185 18.7959 2 17.8182 2H14.4545C11.191 2 8.54545 4.48731 8.54545 7.55556V10.3333H6.18182Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                                    </svg></a>
+                                    <a href="https://twitter.com" className="text-blue-400"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none" >
+                                        <path d="M2 18.5C3.76504 19.521 5.81428 20 8 20C14.4808 20 19.7617 14.8625 19.9922 8.43797L22 4.5L18.6458 5C17.9407 4.37764 17.0144 4 16 4C13.4276 4 11.5007 6.51734 12.1209 8.98003C8.56784 9.20927 5.34867 7.0213 3.48693 4.10523C2.25147 8.30185 3.39629 13.3561 6.5 16.4705C6.5 17.647 3.5 18.3488 2 18.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                                    </svg></a>
+                                    <a href="https://instagram.com" className="text-pink-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none" >
+                                        <path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                                        <path d="M16.5 12C16.5 14.4853 14.4853 16.5 12 16.5C9.51472 16.5 7.5 14.4853 7.5 12C7.5 9.51472 9.51472 7.5 12 7.5C14.4853 7.5 16.5 9.51472 16.5 12Z" stroke="currentColor" strokeWidth="1.5" />
+                                        <path d="M17.5078 6.5L17.4988 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg></a>
+                                </div>
+                            </div>
                         </div >
                     </>
                 ) : (

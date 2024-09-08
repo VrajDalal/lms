@@ -147,7 +147,7 @@ export default function DashBoard() {
 
                                 <ul className='list-none p-4'>
                                     <li className='mt-8'>
-                                        <Link href="/admin/dashboard">
+                                        <Link href="/admin/home">
                                             <div className='flex items-center'>
                                                 <div className='icon-column' title='Dashboard'>
                                                     <svg className='mr-4' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">

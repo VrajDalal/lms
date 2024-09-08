@@ -1,14 +1,16 @@
 'use client'
 
 import React, { useRef, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
+import Image from 'next/image'
 import DashBoard from '../dashboard/page'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Loading from "@/components/loading"
 
-interface IAddBooksList {
+interface IAvailableBooks {
     bookNo: string,
     bookName: string,
     bookAuthorName: string,
@@ -22,8 +24,8 @@ export default function Library() {
     const [loading, setLoading] = useState(true)
     const [dragging, setDragging] = useState(false)
     const [isDataVisible, setIsDataVisible] = useState(false)
-    const [tableData, setTableData] = useState<IAddBooksList[]>([])
-    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [tableData, setTableData] = useState<IAvailableBooks[]>([])
+    const [isSingleBookAddModalOpen, setIsSingleBookAddModalOpen] = useState(false)
     const [bookDetails, setbookDetails] = useState({
         bookNo: '',
         bookName: '',
@@ -31,7 +33,16 @@ export default function Library() {
         bookPublisherName: '',
         bookQty: '',
     })
+    const [searchBookDetails, setSearchBookDetails] = useState('')
+    const [filteredBooks, setFilteredBooks] = useState<IAvailableBooks[]>([]);
+    const [isUpdateBookModalOpen, setIsUpdateBookModalOpen] = useState(false)
+    const [selectedBook, setSelectedBook] = useState<IAvailableBooks | null>(null);
 
+
+    const router = useRouter()
+    const addSingleBookRef = useRef<HTMLDialogElement>(null);
+    const updateBookDetailsRef = useRef<HTMLDialogElement>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
 
     useEffect(() => {
         setTimeout(() => {
@@ -41,7 +52,6 @@ export default function Library() {
         handleToRetriveBookDatas()
     }, [loading])
 
-    const fileInputRef = useRef<HTMLInputElement | null>(null)
 
     const handleBooksFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         console.log("File input changed"); // Debugging statement
@@ -116,7 +126,6 @@ export default function Library() {
 
     const handleToRetriveBookDatas = async () => {
         try {
-            setLoading(true)
             const allBooksDetailsListResponse = await fetch('/api/admin/allBooksList', {
                 method: 'GET',
                 headers: {
@@ -127,24 +136,19 @@ export default function Library() {
 
             const allBooksDetailsListResult = await allBooksDetailsListResponse.json()
             if (allBooksDetailsListResult.success) {
-                setLoading(false)
                 setTableData(allBooksDetailsListResult.datas)
                 if (allBooksDetailsListResult.datas && allBooksDetailsListResult.datas.length > 0) {
                     setIsDataVisible(true)
-                    setLoading(false)
                 } else {
                     setIsDataVisible(false)
-                    setLoading(false)
                 }
             } else {
                 console.error('Failed to fetch book data:', allBooksDetailsListResult.error)
                 setIsDataVisible(false)
-                setLoading(false)
             }
         } catch (error) {
             console.error('Error fetching table data:', error)
             setIsDataVisible(false)
-            setLoading(false)
         }
     }
 
@@ -166,12 +170,181 @@ export default function Library() {
         })
     }
 
+    const openAddSingleBookModal = () => {
+        setIsSingleBookAddModalOpen(true);
+    };
+
+    const closeAddSingleBookModal = () => {
+        setIsSingleBookAddModalOpen(false);
+        setbookDetails({
+            bookNo: '',
+            bookName: '',
+            bookAuthorName: '',
+            bookPublisherName: '',
+            bookQty: '',
+        })
+    };
+
+    const searchBook = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        try {
+
+            if (searchBookDetails.trim() === '') {
+                setFilteredBooks([]); // Clear filtered books if search is empty
+                return;
+            }
+
+            const filtered = tableData.filter((book) =>
+                book.bookName.toLowerCase().includes(searchBookDetails.toLowerCase()) ||
+                book.bookNo.toString().includes(searchBookDetails) ||
+                (book.bookAuthorName && book.bookAuthorName.toLowerCase().includes(searchBookDetails.toLowerCase()))
+            );
+            setFilteredBooks(filtered);
+            console.log(filtered);
+        } catch (error) {
+            console.error('Error fetching books details:', error);
+        }
+    }
+
+    const addSingleBook = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        if (!bookDetails.bookNo || !bookDetails.bookName || !bookDetails.bookAuthorName || !bookDetails.bookPublisherName || !bookDetails.bookQty) {
+            toast.info('All field are required')
+            return
+        }
+
+        try {
+            setLoading(true)
+            const singleBookAddResponse = await fetch('/api/student/addSingleBookDetails', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ bookNo: bookDetails.bookNo, bookName: bookDetails.bookName, bookAuthorName: bookDetails.bookAuthorName, bookPublisherName: bookDetails.bookPublisherName, bookQty: bookDetails.bookQty }),
+                credentials: 'include'
+            })
+            console.log(singleBookAddResponse);
+            const singleBookAddResult = await singleBookAddResponse.json()
+            console.log(singleBookAddResult);
+
+            if (singleBookAddResult.success) {
+                setLoading(false)
+                setIsDataVisible(true)
+                closeAddSingleBookModal()
+                toast.success(`${bookDetails.bookName} book added successfully`)
+            } else {
+                setLoading(false)
+                setIsDataVisible(false)
+                toast.error('Book not added successfully')
+            }
+        } catch (error) {
+            setLoading(false)
+            setIsDataVisible(false)
+            console.error(error, 'Error while add single new book')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const deleteLibraryBook = async (bookNo: string) => {
+        try {
+            setLoading(true)
+            // router.push(`/admin/library?bookNo=${encodeURIComponent(bookNo)}`)
+            const deleteLibraryBookResponse = await fetch(`/api/student/deleteLibraryBook/${bookNo}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            })
+            console.log(deleteLibraryBookResponse);
+            const deleteBookIssuedDetailResult = await deleteLibraryBookResponse.json()
+            console.log(deleteBookIssuedDetailResult);
+
+            if (deleteBookIssuedDetailResult.success) {
+                setLoading(false)
+                setIsDataVisible(true)
+                const bookName = deleteBookIssuedDetailResult.isPresentBook.bookName
+                toast.success(`${bookName} book deleted successfully`)
+            } else {
+                setLoading(false)
+                setIsDataVisible(false)
+                toast.error('Book not deleted')
+            }
+        } catch (error) {
+            setLoading(false)
+            console.error(error, 'Error when deleting the book');
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleLibraryBookModalOpen = (bookDetails: any) => {
+        setSelectedBook(bookDetails);
+        setIsUpdateBookModalOpen(true);
+    };
+
+    const handleLibraryBookModalClose = () => {
+        setIsUpdateBookModalOpen(false);
+        setSelectedBook(null);
+    };
+
+    const handleLibrayBookUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
+        setSelectedBook((prev: any) => ({
+            ...prev,
+            [id]: value
+        }));
+    };
+
+    const updateLibraryBookDetails = async (bookNo: string) => {
+        console.log("Book details before update:", bookDetails);
+
+        if (!bookDetails || !bookDetails.bookNo) {
+            throw new Error("Invalid book details");
+        }
+
+        try {
+            setLoading(true)
+            const updateLibraryBookDetailsResponse = await fetch(`/api/student/updateLibraryBook/${bookNo}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bookDetails),
+                credentials: 'include'
+            })
+            console.log(updateLibraryBookDetailsResponse);
+            const updateLibraryBookDetailsResult = await updateLibraryBookDetailsResponse.json()
+            console.log(updateLibraryBookDetailsResult);
+            if (updateLibraryBookDetailsResult.success) {
+                setLoading(false)
+                setIsDataVisible(true)
+                setIsUpdateBookModalOpen(false)
+                toast.success('Book details updated successfully')
+            } else {
+                setLoading(false)
+                setIsDataVisible(false)
+                toast.error('Book details not updated')
+            }
+        } catch (error) {
+            setLoading(false)
+            console.error(error, 'Error when updating the book details')
+        } finally {
+            setLoading(false)
+        }
+    }
+
     //in library section add manually books and save into table also (CRUD operation ,edit quantity,delete books)
     //if not book data than show drag option else show buttons : done
-    //in search book no,name,author on keyup event
-    //on click of bookno can do PATCH or update the book details in which only Qty update
-    //in row end put delete for remove the book
+    //in search book no,name,author on keyup event : done
+    //on click of bookno can do PATCH or update the book details in which all fields want to update
+    //in row end put delete for remove the book : Done
     //if student issue a book than also update the qty
+
+    const displayBooks = searchBookDetails ? filteredBooks : tableData;
 
     return (
         <>
@@ -184,37 +357,30 @@ export default function Library() {
             <div className={`main-content ${loading ? 'blur' : ''}`}>
                 <DashBoard />
                 <div className="flex flex-col pl-20 pt-20 md:pl-24 min-h-screen lg:pl-24 pr-4 lg:pr-16 bg-[#FCFAF5]">
-                    <div className="text-5xl font-bold">
+                    <div className="text-5xl font-bold mt-4">
                         <h1>Library</h1>
                     </div>
                     <br />
                     <hr />
-                    <div className='text-xl mt-4 flex flex-col md:flex-row md:items-center md:space-x-4'>
-                        <label htmlFor="txtSearchBox" className='mr-2'>Search</label>
-                        <Input
-                            type='text'
-                            id='txtSearchBox'
-                            placeholder='Enter Book Id / Book Name / Author '
-                            className='w-full md:w-2/4 text-xl mb-2 md:mb-0'
-                        />
-                        <button className='display inline-block'>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                width="24"
-                                height="24"
-                                fill="none"
-                                className='inline-block'
-                            >
-                                <path d="M17.5 17.5L22 22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                            </svg>
-                        </button>
-                    </div>
 
                     {isDataVisible ? (
                         <>
+                            {/* seach */}
+                            <div className='text-xl mt-4 flex flex-col md:flex-row md:items-center md:space-x-4'>
+                                <label htmlFor="txtSearchBox" className='mr-2'>Search</label>
+                                <Input
+                                    type='text'
+                                    id='txtSearchBox'
+                                    placeholder='Enter Book Id / Book Name / Author '
+                                    className='w-full md:w-2/4 text-xl mb-2 md:mb-0'
+                                    value={searchBookDetails}
+                                    onChange={e => setSearchBookDetails(e.target.value)}
+                                    onKeyUp={searchBook}
+                                />
+                            </div>
+
                             <div className='mt-6 space-x-4'>
+                                {/* upload excel file */}
                                 <Button variant="secondary" className='text-lg'>
                                     <label htmlFor="booksExcelFileUpload" className="cursor-pointer flex items-center">
                                         <svg
@@ -233,7 +399,7 @@ export default function Library() {
                                     </label>
                                 </Button>
                                 {!selectedFile && (
-                                    <Button variant="secondary" className='text-lg' onClick={() => setIsModalOpen(true)}>
+                                    <Button variant="secondary" className='text-lg' onClick={openAddSingleBookModal}>
                                         <label htmlFor="addManualyBook" className="cursor-pointer flex items-center p-2">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="w-6 mr-2" viewBox="0 0 24 24" color="#000000" fill="none">
                                                 <path d="M12 8V16M16 12L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -244,18 +410,18 @@ export default function Library() {
                                     </Button>
                                 )}
 
-                                {/* Modal */}
-                                {isModalOpen && (
-                                    <div className="fixed inset-0 bg-gray-900  bg-opacity-50 flex items-center justify-center">
-                                        <div className="bg-[#FCFAF5] md:p-6 lg:p-6 xl:p-10 justify-center items-center rounded-lg shadow-lg w-full max-w-sm sm:max-w-sm md:max-w-md lg:max-w-5xl xl:max-w-sxl relative">
-                                            {/* Cancel Button */}
+                                {/* Single Book Add Modal */}
+                                {isSingleBookAddModalOpen && (
+                                    <dialog ref={addSingleBookRef} className="modal" open>
+                                        <div className="modal-box bg-[#FCFAF5] md:p-6 lg:p-6 xl:p-10 justify-center items-center rounded-2xl shadow-2xl border-4 w-full max-w-sm sm:max-w-sm md:max-w-md lg:max-w-5xl xl:max-w-sxl relative">
+                                            {/* Cancel Button  bg-[#FCFAF5]*/}
                                             <button
-                                                className="absolute top-4 right-4 text-gray-600 md:text-2xl lg:text-3xl hover:text-gray-800"
-                                                onClick={() => setIsModalOpen(false)}
+                                                className="absolute top-4 right-4 text-gray-600 md:text-2xl lg:text-5xl hover:text-gray-800"
+                                                onClick={closeAddSingleBookModal}
                                             >
                                                 &times;
                                             </button>
-                                            <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl lg:mb-4 font-bold mb-4">Enter BookDetails:-</h2>
+                                            <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl lg:mb-4 font-bold mb-4">Enter Book Details:-</h2>
                                             <hr className='bg-gray-300 mb-4 lg:mb-8' />
                                             <form>
                                                 <div className="mb-4 lg:mb-12">
@@ -263,7 +429,7 @@ export default function Library() {
                                                         {/* Book No Field */}
                                                         <div className="flex-1">
                                                             <label htmlFor="bookNo" className="block text-left text-sm lg:text-lg font-medium">Book No</label>
-                                                            <Input id="bookNo" type="text" placeholder='Enter Book No' className="mt-1 block w-full" value={bookDetails.bookNo} onChange={handleInputChange} required />
+                                                            <Input id="bookNo" type="text" autoFocus placeholder='Enter Book No' className="mt-1 block w-full" value={bookDetails.bookNo} onChange={handleInputChange} required />
                                                             {/* Pattern Error Message */}
                                                             {bookDetails.bookNo && !/^[0-9]+$/.test(bookDetails.bookNo) && (
                                                                 <p className='mt-1 text-red-500 text-xs'>Please Enter Numbers Only</p>
@@ -275,7 +441,7 @@ export default function Library() {
                                                             <label htmlFor="bookName" className="block text-left text-sm lg:text-lg font-medium">Book Name</label>
                                                             <Input id="bookName" type="text" placeholder='Enter Book Name' className="mt-1 block w-full" value={bookDetails.bookName} onChange={handleInputChange} required />
                                                             {/* Pattern Error Message */}
-                                                            {bookDetails.bookName && !/^[A-Za-z]+$/.test(bookDetails.bookName) && (
+                                                            {bookDetails.bookName && !/^[A-Za-z\s]{2,}$/.test(bookDetails.bookName) && (
                                                                 <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
                                                             )}
                                                         </div>
@@ -285,7 +451,7 @@ export default function Library() {
                                                             <label htmlFor="bookAuthorName" className="block text-left text-sm lg:text-lg font-medium">Author Name</label>
                                                             <Input id="bookAuthorName" type="text" placeholder='Enter Author Name' className="mt-1 block w-full" value={bookDetails.bookAuthorName} onChange={handleInputChange} required />
                                                             {/* Pattern Error Message */}
-                                                            {bookDetails.bookAuthorName && !/^[A-Za-z]+$/.test(bookDetails.bookAuthorName) && (
+                                                            {bookDetails.bookAuthorName && !/^[A-Za-z\s]{2,}$/.test(bookDetails.bookAuthorName) && (
                                                                 <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
                                                             )}
                                                         </div>
@@ -299,7 +465,7 @@ export default function Library() {
                                                             <label htmlFor="bookPublisherName" className="block text-left text-sm lg:text-lg font-medium">Publisher Name</label>
                                                             <Input id="bookPublisherName" type="text" placeholder='Enter Publisher Name' className="mt-1 block w-full" value={bookDetails.bookPublisherName} onChange={handleInputChange} required />
                                                             {/* Pattern Error Message */}
-                                                            {bookDetails.bookPublisherName && !/^[A-Za-z]+$/.test(bookDetails.bookPublisherName) && (
+                                                            {bookDetails.bookPublisherName && !/^[A-Za-z\s]{2,}$/.test(bookDetails.bookPublisherName) && (
                                                                 <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
                                                             )}
                                                         </div>
@@ -317,44 +483,148 @@ export default function Library() {
                                                 </div>
 
                                                 <div className="flex flex-col md:flex-row justify-center w-full gap-6 mt-6">
-                                                    <Button type="submit" className="w-40 md:w-auto lg:w-52">Add Book</Button>
+                                                    <Button type="button" className="w-40 md:w-auto lg:w-52" onClick={addSingleBook}>Add Book</Button>
                                                     <Button type="button" className="w-40 md:w-28 lg:w-52" onClick={handleReset}>Reset</Button>
                                                 </div>
                                             </form>
                                         </div>
                                         <form method="dialog" className="modal-backdrop">
-                                            <button>close</button>
+                                            <button onClick={closeAddSingleBookModal}></button>
                                         </form>
-                                    </div>
+                                    </dialog>
+                                )}
+
+                                {/* Update Book Modal */}
+                                {isUpdateBookModalOpen && selectedBook && (
+                                    <dialog ref={updateBookDetailsRef} className="modal" open>
+                                        <div className="modal-box bg-[#FCFAF5] md:p-6 lg:p-6 xl:p-10 justify-center items-center rounded-2xl shadow-2xl border-4 w-full max-w-sm sm:max-w-sm md:max-w-md lg:max-w-5xl xl:max-w-sxl relative">
+                                            {/* Cancel Button  bg-[#FCFAF5]*/}
+                                            <button
+                                                className="absolute top-4 right-4 text-gray-600 md:text-2xl lg:text-5xl hover:text-gray-800"
+                                                onClick={handleLibraryBookModalClose}
+                                            >
+                                                &times;
+                                            </button>
+                                            <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl lg:mb-4 font-bold mb-4">Edit Book Details:-</h2>
+                                            <hr className='bg-gray-300 mb-4 lg:mb-8' />
+                                            <form>
+                                                <div className="mb-4 lg:mb-12">
+                                                    <div className="flex flex-col md:flex-row lg:flex-row gap-4">
+                                                        {/* Book No Field */}
+                                                        <div className="flex-1">
+                                                            <label htmlFor="bookNo" className="block text-left text-sm lg:text-lg font-medium">Book No</label>
+                                                            <Input id="bookNo" type="text" autoFocus placeholder='Enter Book No' className="mt-1 block w-full" value={selectedBook.bookNo} onChange={handleLibrayBookUpdateInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookNo && !/^[0-9]+$/.test(bookDetails.bookNo) && (
+                                                                <p className='mt-1 text-red-500 text-xs'>Please Enter Numbers Only</p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Book Name Field */}
+                                                        <div className="flex-1">
+                                                            <label htmlFor="bookName" className="block text-left text-sm lg:text-lg font-medium">Book Name</label>
+                                                            <Input id="bookName" type="text" placeholder='Enter Book Name' className="mt-1 block w-full" value={selectedBook.bookName} onChange={handleLibrayBookUpdateInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookName && !/^[A-Za-z\s]{2,}$/.test(bookDetails.bookName) && (
+                                                                <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Author Name Field */}
+                                                        <div className="flex-1">
+                                                            <label htmlFor="bookAuthorName" className="block text-left text-sm lg:text-lg font-medium">Author Name</label>
+                                                            <Input id="bookAuthorName" type="text" placeholder='Enter Author Name' className="mt-1 block w-full" value={selectedBook.bookAuthorName} onChange={handleLibrayBookUpdateInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookAuthorName && !/^[A-Za-z\s]{2,}$/.test(bookDetails.bookAuthorName) && (
+                                                                <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-4 lg:mb-12">
+                                                    <div className="flex flex-col md:flex-row lg:flex-row gap-4 justify-center lg:justify-center">
+                                                        {/* Publisher Name Field */}
+                                                        <div className="flex-1 lg:flex-none lg:w-1/4">
+                                                            <label htmlFor="bookPublisherName" className="block text-left text-sm lg:text-lg font-medium">Publisher Name</label>
+                                                            <Input id="bookPublisherName" type="text" placeholder='Enter Publisher Name' className="mt-1 block w-full" value={selectedBook.bookPublisherName} onChange={handleLibrayBookUpdateInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookPublisherName && !/^[A-Za-z\s]{2,}$/.test(bookDetails.bookPublisherName) && (
+                                                                <p className="mt-1 text-red-500 text-xs">Please enter only letters.</p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Quantity Field */}
+                                                        <div className="flex-1 lg:flex-none lg:w-1/4">
+                                                            <label htmlFor="bookQty" className="block text-left text-sm lg:text-lg font-medium">Quantity</label>
+                                                            <Input id="bookQty" type="text" placeholder='Enter Quantity' className="mt-1 block w-full" value={selectedBook.bookQty} onChange={handleLibrayBookUpdateInputChange} required />
+                                                            {/* Pattern Error Message */}
+                                                            {bookDetails.bookQty && !/^[0-9]+$/.test(bookDetails.bookQty) && (
+                                                                <p className="mt-1 text-red-500 text-xs">Please enter only numbers.</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col md:flex-row justify-center w-full gap-6 mt-6">
+                                                    <Button type="button" className="w-40 md:w-auto lg:w-52" onClick={() => updateLibraryBookDetails(selectedBook.bookNo)}>Save</Button>
+                                                    <Button type="button" className="w-40 md:w-28 lg:w-52" onClick={handleLibraryBookModalClose}>Cancel</Button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <form method="dialog" className="modal-backdrop">
+                                            <button onClick={handleLibraryBookModalClose}></button>
+                                        </form>
+                                    </dialog>
                                 )}
                             </div>
 
-                            <div className='mt-6 pb-8'>
-                                <div className='bg-[#F8F4EF] border-2 border-gray-300 rounded-xl shadow-2xl'>
-                                    <table className='w-full text-left table-auto'>
-                                        <thead className='bg-gray-200'>
-                                            <tr>
-                                                <th className='p-4 border-b-4 border-gray-300'>Book No</th>
-                                                <th className='p-4 border-b-4 border-gray-300'>Book Name</th>
-                                                <th className='p-4 border-b-4 border-gray-300'>Book Author Name</th>
-                                                <th className='p-4 border-b-4 border-gray-300'>Book Publisher Name</th>
-                                                <th className='p-4 border-b-4 border-gray-300'>Book Quantity</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className='divide-y divide-gray-300'>
-                                            {tableData.map((bookDetails, index) => (
-                                                <tr key={index} className='hover:bg-gray-300 cursor-pointer'>
-                                                    <td className='p-4'>{bookDetails.bookNo}</td>
-                                                    <td className='p-4'>{bookDetails.bookName}</td>
-                                                    <td className='p-4'>{bookDetails.bookAuthorName}</td>
-                                                    <td className='p-4'>{bookDetails.bookPublisherName}</td>
-                                                    <td className='p-4 text-center'>{bookDetails.bookQty}</td>
+                            {displayBooks.length > 0 ? (
+                                <div className="mt-6 pb-8">
+                                    <div className="bg-[#F8F4EF] border-2 border-gray-300 rounded-xl shadow-2xl">
+                                        <table className="w-full text-left table-auto">
+                                            <thead className="bg-gray-200">
+                                                <tr>
+                                                    <th className="p-4 border-b-4 border-gray-300 cursor-default">Book No</th>
+                                                    <th className="p-4 border-b-4 border-gray-300 cursor-default">Book Name</th>
+                                                    <th className="p-4 border-b-4 border-gray-300 cursor-default">Author Name</th>
+                                                    <th className="p-4 border-b-4 border-gray-300 cursor-default">Publisher Name</th>
+                                                    <th className="p-4 border-b-4 border-gray-300 cursor-default">Quantity</th>
+                                                    <th className="p-4 border-b-4 border-gray-300 cursor-default">Action</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-300">
+                                                {displayBooks.map((bookDetails) => (
+                                                    <tr key={bookDetails.bookNo} className="hover:bg-gray-300">
+                                                        <td className="p-4 cursor-pointer" onClick={() => handleLibraryBookModalOpen(bookDetails)}>{bookDetails.bookNo}</td>
+                                                        <td className="p-4 cursor-default">{bookDetails.bookName}</td>
+                                                        <td className="p-4 cursor-default">{bookDetails.bookAuthorName}</td>
+                                                        <td className="p-4 cursor-default">{bookDetails.bookPublisherName}</td>
+                                                        <td className="p-4 cursor-default text-center">{bookDetails.bookQty}</td>
+                                                        <td className='p-4 text-center'>
+                                                            <button type='button' title='Remove book' className='mt-2' onClick={() => deleteLibraryBook(bookDetails.bookNo)}>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
+                                                                    <path d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                    <path d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                    <path d="M9.5 16.5L9.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                    <path d="M14.5 16.5L14.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                </svg>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="flex justify-center items-center h-64 mt-8">
+                                    <div className="text-center">
+                                        <Image src="/no-data.png" alt="No data found" priority width={300} height={300} className="mx-auto mb-4" />
+                                        <p className="text-gray-600 text-xl font-semibold -mt-12 mb-4">Book not found.</p>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     ) : (
                         <>
@@ -394,7 +664,7 @@ export default function Library() {
                                         </label>
                                     </Button>
                                     {!selectedFile && (
-                                        <Button type='button' variant="outline" className='text-lg' onClick={() => setIsModalOpen(true)}>
+                                        <Button type='button' variant="outline" className='text-lg' onClick={openAddSingleBookModal}>
                                             <label htmlFor="addManualyBook" className="cursor-pointer flex items-center p-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 mr-2" viewBox="0 0 24 24" color="#000000" fill="none">
                                                     <path d="M12 8V16M16 12L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -409,7 +679,8 @@ export default function Library() {
                         </>
                     )}
                 </div>
-            </div>
+            </div >
         </>
+        // 89790899 Managing Oneself Managing Oneself Harvard Business Review 3
     )
 }

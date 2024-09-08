@@ -22,8 +22,8 @@ export default function Home() {
 
     return (
         <>
-            <DashBoard />
             <title>Home</title>
+            <DashBoard />
             {loading && (
                 <div className="loader-overlay loader-container">
                     <Loading />
@@ -69,9 +69,9 @@ export default function Home() {
                     </div>
                     <div className="flex justify-center items-center py-16">
                         <p className="text-center text-2xl md:text-4xl lg:text-4xl font-bold text-gray-800 p-4 rounded">
-                            "I have always imagined that <br></br>
+                            `I have always imagined that <br></br>
                             Paradise will be a kind of a <br></br>
-                            library."
+                            library.`
                         </p>
                     </div>
                 </div>
