@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { format, parseISO, isValid, parse } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -247,7 +247,11 @@ export default function IssueBook() {
                 }
             } else {
                 setLoading(false)
-                toast.error('Failed to issue book');
+                if (issueBookResult.message.includes("out of stock")) {
+                    toast.error(issueBookResult.message);
+                } else {
+                    toast.error('Failed to issue book');
+                }
             }
         } catch (error) {
             setLoading(false)
@@ -502,7 +506,7 @@ export default function IssueBook() {
                     </div>
                     <br />
                     <hr />
-                    <div className='border-4 border-gray-300 min-h-auto rounded-3xl bg-white p-6 m-4 md:m-8 shadow-2xl'>
+                    <div className='border-4 border-gray-300 min-h-auto rounded-3xl bg-white p-2 m-4 md:m-4 shadow-2xl'>
                         <>
                             <form className='m-4'>
                                 <div className='text-xl mt-4 flex flex-col md:flex-row md:items-center md:space-x-4'>
@@ -519,27 +523,17 @@ export default function IssueBook() {
                                             }
                                         }}
                                         placeholder='Enter student id..'
-                                        className='w-full md:w-2/4 text-xl mb-2 md:mb-0'
+                                        className='w-full md:w-2/4 text-xl mb-2 md:mb-0 rounded-lg'
                                     />
                                     <button onClick={() => handleSearchStudentId(searchStudentId)} type='button'>
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            width="24"
-                                            height="24"
-                                            fill="none"
-                                            className='inline-block'
-                                        >
-                                            <path d="M17.5 17.5L22 22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                            <path d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                                        </svg>
+                                        <Search className='text-xl' />
                                     </button>
                                 </div>
                                 {showSuccessGif ? (
                                     <ShowSuccessGif />
                                 ) : (
                                     !showSuccessGif && studentIdFound && showStudentDetails && studentDetails ? (
-                                        <div className="mt-4 font-bold p-4">
+                                        <div className="mt-4 font-bold p-2">
                                             <h3 className='text-2xl md:text-3xl lg:text-4xl font-bold mt-4 mb-8'>Student Details</h3>
                                             <div className='border-2 border-gray-300 rounded-2xl shadow-2xl p-6'>
                                                 <div className="mb-4">
@@ -613,6 +607,13 @@ export default function IssueBook() {
                                                 <h2 className='text-lg md:text-xl lg:text-2xl font-bold mt-6'>Issue Book Details</h2>
                                                 {bookIssues.map((bookIssue, index) => (
                                                     <div key={index} className="flex items-center space-x-4 border-2 border-gray-300 rounded-2xl p-4 shadow-2xl">
+                                                        {isAddNewBook && index === bookIssues.length - 1 && showCancelSvg && !bookIssuedDone && (
+                                                            <button type='button' title='Cancel' className='mt-6' onClick={() => { handleRemoveBookIssueIndex(index); setIsAddNewBook(false); }}>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" color="#000000" fill="none">
+                                                                    <path d="M19.0005 4.99988L5.00049 18.9999M5.00049 4.99988L19.0005 18.9999" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                </svg>
+                                                            </button>
+                                                        )}
                                                         <div className="flex-1">
                                                             <p className='block text-center md:text-left text-sm md:text-sm font-medium mb-2'>Book No:</p>
                                                             <Input
@@ -724,13 +725,6 @@ export default function IssueBook() {
                                                                     </svg>
                                                                 </button>
                                                             </>
-                                                        )}
-                                                        {isAddNewBook && index === bookIssues.length - 1 && showCancelSvg && !bookIssuedDone && (
-                                                            <button type='button' title='Cancel' className='mt-6' onClick={() => { handleRemoveBookIssueIndex(index); setIsAddNewBook(false); }}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="#000000" fill="none">
-                                                                    <path d="M19.0005 4.99988L5.00049 18.9999M5.00049 4.99988L19.0005 18.9999" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                                </svg>
-                                                            </button>
                                                         )}
                                                     </div>
                                                 ))}

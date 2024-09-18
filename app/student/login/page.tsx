@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react'
 import { useState } from 'react';
+import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from "sonner";
@@ -181,51 +182,89 @@ export default function StudentLogin() {
     return (
         <>
             <title>Student Login</title>
-            <div className='min-h-screen flex inset-0 justify-center items-center bg-cover bg-center bg-no-repeat'
-                style={{ backgroundImage: "url('/student_login_bg.jpg')" }}>
-                <div className=" pt-20 inset-0 flex justify-center items-center">
-                    <div className='p-8 rounded-xl w-full max-w-md mx-6 border-4 border-slate-400 shadow-2xl shadow-slate-600 min-h-[400px] bg-gradient-to-b from-sky-200 to-gray-200'>
-                        <div className='flex pb-2 justify-center items-center'>
-                            <h1 className='text-5xl font-bold'>Sign in</h1>
-                        </div><br />
-                        <div className='flex justify-center text-center items-center'>
-                            <p className='text-[16px] font-bold'>`A library is a place where books and
-                                sources of information are stored.`</p>
-                        </div><br />
-                        <form className='mt-5'>
+            <div className="min-h-screen flex items-center justify-center bg-gray-300 p-4 overflow-hidden">
+                <div className="flex flex-col md:flex-row rounded-xl shadow-2xl h-full w-full max-w-4xl overflow-hidden">
+
+                    {/* Left Section (Mobile Top, Desktop Left) */}
+                    <div className="flex flex-col justify-center items-center p-4 w-full md:w-1/2 bg-gray-600">
+                        <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-48 md:h-48 lg:w-56 lg:h-56">
+                            <Image
+                                src="/student_logo.png"
+                                alt="Logo"
+                                className="rounded-full w-full h-auto"
+                                width={400}
+                                height={150}
+                            />
+                        </div>
+
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-200">Sign in</h1>
+
+                        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-200 font-semibold text-center mt-4">
+                            `A library is a place where books and sources of information are stored.`
+                        </p>
+
+                        {/* Login Form */}
+                        <form className="mt-6 w-full">
                             <div>
-                                <label htmlFor="txtStudentSid" className='font-semibold text-xl'>Enter Student ID</label><br />
-                                <Input type='text' inputMode='numeric' value={studentSID} onChange={handleStudentIDChange} onBlur={handleStudentID} className='mt-2 text-lg display inline-block' />
-
-                                {(!isStudentSIDValid || !showOtpButton) && (
-                                    <>
-                                        {isSendOtpLoader && isStudentSIDValid && (
-                                            <Loader className='animate-spin display inline-block' />
-                                        )}
-                                        <Button className='text-lg mt-4 w-full' onClick={handleSendOtpButton}>Continue</Button>
-                                    </>
-                                )}
-
+                                <label htmlFor="txtStudentSid" className="font-semibold text-slate-200 block text-base sm:text-lg md:text-xl">
+                                    Enter Student ID
+                                </label>
+                                <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="Your Student ID"
+                                    value={studentSID}
+                                    onChange={handleStudentIDChange}
+                                    onBlur={handleStudentID}
+                                    className="mt-2 w-full p-3 bg-gray-200 rounded-md text-base"
+                                />
                             </div>
 
+                            {/* Continue Button */}
+                            {(!isStudentSIDValid || !showOtpButton) && (
+                                <Button className="mt-4 w-full bg-blue-700 text-white py-2 rounded-md" onClick={handleSendOtpButton}>
+                                    {isSendOtpLoader && isStudentSIDValid ? (
+                                        <Loader className="animate-spin" />
+                                    ) : (
+                                        "Continue"
+                                    )}
+                                </Button>
+                            )}
+
+                            {/* OTP Section */}
                             {isStudentSIDValid && showOtpButton && (
                                 <div className='mt-4'>
-                                    <label htmlFor="txtStudentSidEmailSendOtp" className='font-semibold text-xl display inline-block'>One time password</label> <br />
+                                    <label htmlFor="txtStudentSidEmailSendOtp" className='font-semibold text-slate-200 block text-base sm:text-lg md:text-xl'>One time password</label> <br />
                                     {studentSIDOtp.map((val, index) => (
-                                        <Input type='text' key={index} maxLength={1} autoFocus={index === 0} value={val} onChange={(e) => handleOtp(e.target.value, index)} ref={(ele) => { inputRef.current[index] = ele }} onKeyDown={(eles) => handleBackspaceRemoveEle(eles, index)} inputMode='numeric' className='w-10 h-10 mt-2 mx-1 text-center display inline-block text-md' />
+                                        <Input type='text' key={index} maxLength={1} autoFocus={index === 0} value={val} onChange={(e) => handleOtp(e.target.value, index)} ref={(ele) => { inputRef.current[index] = ele }} onKeyDown={(eles) => handleBackspaceRemoveEle(eles, index)} inputMode='numeric' className='w-10 h-10 text-center mx-1 display inline-block text-md' />
                                     ))}
                                 </div>
                             )}
 
+                            {/* Login Button */}
                             {isStudentSIDValid && isStudentSIDEmailOtpValid && showOtpButton && (
-                                <div className="mt-4 justify-center items-center flex">
-                                    <Button type="button" className='text-lg w-full' onClick={handleRedirection}>Login</Button>
+                                <div className="mt-6">
+                                    <Button type="button" onClick={handleRedirection} className="w-full bg-green-700 text-white py-2 rounded-md">
+                                        Login
+                                    </Button>
                                 </div>
                             )}
                         </form>
+                    </div>
+
+                    {/* Right Section (Hidden on Mobile) */}
+                    <div className="hidden md:flex w-full md:w-1/2 bg-black justify-center items-center h-auto">
+                        <Image
+                            src="/student_login.png"
+                            alt="student with book"
+                            className="h-full w-full object-cover rounded-tr-xl rounded-br-xl"
+                            width={1200}
+                            height={1000}
+                        />
                     </div>
                 </div>
             </div>
         </>
     )
+
 }

@@ -3,6 +3,7 @@ import { connect } from "@/app/utils/mongo";
 import AddStudentsList from "@/lib/models/admin/addStudents.model";
 import StudentsIssueBooks from "@/lib/models/admin/studentsIssueBook.model";
 import StudentsIssueBooksHistory from "@/lib/models/admin/studentsIssueBookHistory.model";
+import AddBooksList from "@/lib/models/admin/addBooksList.model"
 import { format, parse, isValid } from "date-fns";
 
 export async function POST(req: NextRequest) {
@@ -36,6 +37,14 @@ export async function POST(req: NextRequest) {
                 returnDate: returnDate ? format(returnDate, "yyyy-MM-dd") : "",
             };
         });
+
+        for (let detail of formattedIssueDetails) {
+
+            await AddBooksList.updateOne(
+                { bookNo: detail.bookNo },
+                { $inc: { bookQty: -1 } } // Decrement the quantity
+            );
+        }
 
         const existingIssueRecord = await StudentsIssueBooks.findOne({ sid });
 

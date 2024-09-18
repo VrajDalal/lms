@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from "react";
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Image from "next/image";
@@ -50,7 +50,7 @@ export default function AdminLogin() {
             const adminLoginResult = await adminLoginResponse.json()
             if (adminLoginResult.success) {
                 setLoading(false)
-                router.push('/admin/dashboard');
+                router.push('/admin/home');
             } else {
                 setLoading(false)
                 toast.error("Invalid username or password");
@@ -58,7 +58,7 @@ export default function AdminLogin() {
         } catch (error) {
             setLoading(false)
             toast.error("Authentication failed");
-        } finally{
+        } finally {
             setLoading(false)
         }
     };
@@ -93,13 +93,13 @@ export default function AdminLogin() {
                             speed={2000}
                             className="w-full h-full">
                             <SwiperSlide>
-                                <Image src="/login-corousal-1.jpg" alt="Image 1" width={1200} height={675} className="object-cover w-full h-screen" priority/>
+                                <Image src="/login-corousal-1.jpg" alt="Image 1" width={1200} height={675} className="object-cover w-full h-screen" priority />
                             </SwiperSlide>
                             <SwiperSlide>
-                                <Image src="/login-corousal-2.jpg" alt="Image 2" width={1200} height={675} className="object-cover w-full h-screen" priority/>
+                                <Image src="/login-corousal-2.jpg" alt="Image 2" width={1200} height={675} className="object-cover w-full h-screen" priority />
                             </SwiperSlide>
                             <SwiperSlide>
-                                <Image src="/login-corousal-3.jpg" alt="Image 3" width={1200} height={675} className="object-cover w-full h-screen" priority/>
+                                <Image src="/login-corousal-3.jpg" alt="Image 3" width={1200} height={675} className="object-cover w-full h-screen" priority />
                             </SwiperSlide>
                         </Swiper>
                     </div>

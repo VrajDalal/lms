@@ -28,6 +28,8 @@ interface IStudentBookIssueHistory {
     studentYear: string;
     studentDiv: string;
     IssueDetails: IBookIssue[]
+    createAt: Date;
+
 }
 
 export default function History() {
@@ -68,8 +70,8 @@ export default function History() {
             }
         };
         handleToGetStudentIssueBooksHistory();
-    }, []); 
-    
+    }, []);
+
 
     useEffect(() => {
         setTimeout(() => {
@@ -95,94 +97,98 @@ export default function History() {
 
 
     const renderHistory = () => {
-        return studentBookIssueHistory.map((history, historyIndex) => (
-            <Card key={historyIndex} className='bg-[#F8F4EF] border-2 border-gray-300 rounded-2xl shadow-2xl mb-6'>
-                <CardHeader>
-                    <CardTitle>Student ID: {history.sid}</CardTitle>
-                    <span className='text-xl'>{history.studentName} - {history.studentCource}</span>
-                </CardHeader>
-                <CardContent>
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4 text-lg font-semibold'>
-                        <div className='flex flex-col'>
-                            <div className='flex items-center gap-2'>
-                                <span className='font-medium w-1/3'>Enrollment No:</span>
-                                <span>{history.enrollmentNo}</span>
+        return studentBookIssueHistory
+            .sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime())
+            .map((history, historyIndex) => (
+                <Card key={historyIndex} className='bg-[#F8F4EF] border-2 border-gray-300 rounded-2xl shadow-2xl mb-6'>
+                    <CardHeader>
+                        <CardTitle>Student ID: {history.sid}</CardTitle>
+                        <span className='text-xl'>{history.studentName} - {history.studentCource}</span>
+                    </CardHeader>
+                    <CardContent>
+                        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4 text-lg font-semibold'>
+                            <div className='flex flex-col'>
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-medium w-1/3'>Enrollment No:</span>
+                                    <span>{history.enrollmentNo}</span>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-medium w-1/3'>Email Id:</span>
+                                    <span>{history.studentEmail}</span>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-medium w-1/3'>Academic Year:</span>
+                                    <span>{history.studentYear}</span>
+                                </div>
                             </div>
-                            <div className='flex items-center gap-2'>
-                                <span className='font-medium w-1/3'>Email Id:</span>
-                                <span>{history.studentEmail}</span>
-                            </div>
-                            <div className='flex items-center gap-2'>
-                                <span className='font-medium w-1/3'>Academic Year:</span>
-                                <span>{history.studentYear}</span>
+                            <div className='flex flex-col'>
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-medium w-1/3'>Student Roll No:</span>
+                                    <span>{history.studentRollNo}</span>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-medium w-1/3'>Mobile No:</span>
+                                    <span>{history.studentMobileNo}</span>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-medium w-1/3'>Division:</span>
+                                    <span>{history.studentDiv}</span>
+                                </div>
                             </div>
                         </div>
-                        <div className='flex flex-col'>
-                            <div className='flex items-center gap-2'>
-                                <span className='font-medium w-1/3'>Student Roll No:</span>
-                                <span>{history.studentRollNo}</span>
-                            </div>
-                            <div className='flex items-center gap-2'>
-                                <span className='font-medium w-1/3'>Mobile No:</span>
-                                <span>{history.studentMobileNo}</span>
-                            </div>
-                            <div className='flex items-center gap-2'>
-                                <span className='font-medium w-1/3'>Division:</span>
-                                <span>{history.studentDiv}</span>
-                            </div>
-                        </div>
-                    </div>
-                    {history.IssueDetails && history.IssueDetails.length > 0 && (
-                        <div className='mt-4'>
-                            <div className='bg-[#F8F4EF] border-2 border-gray-300 rounded-xl shadow-2xl'>
-                                <table className='w-full text-left'>
-                                    <thead className='bg-gray-200'>
-                                        <tr>
-                                            <th className='p-4 border-b'>Book No</th>
-                                            <th className='p-4 border-b'>Book Name</th>
-                                            <th className='p-4 border-b'>Issue Date</th>
-                                            <th className='p-4 border-b'>Return Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {history.IssueDetails.map((bookIssue, bookIssueIndex) => (
-                                            <tr key={`${historyIndex}-${bookIssueIndex}`} className='border-b font-semibold'>
-                                                <td className='p-4'>{bookIssue.bookNo}</td>
-                                                <td className='p-4'>{bookIssue.bookName}</td>
-                                                <td className='p-4'>
-                                                    <Popover>
-                                                        <PopoverTrigger asChild>
-                                                            <span>
-                                                                {bookIssue.bookIssueDate ? format(new Date(bookIssue.bookIssueDate), 'PPP') : 'Invalid Date'}
-                                                            </span>
-                                                        </PopoverTrigger>
-                                                        <PopoverContent className="w-auto p-0">
-                                                            <Calendar mode="single" selected={new Date(bookIssue.bookIssueDate)} disabled />
-                                                        </PopoverContent>
-                                                    </Popover>
-                                                </td>
-                                                <td className='p-4'>
-                                                    <Popover>
-                                                        <PopoverTrigger asChild>
-                                                            <span>
-                                                                {bookIssue.returnDate ? format(new Date(bookIssue.returnDate), 'PPP') : 'Invalid Date'}
-                                                            </span>
-                                                        </PopoverTrigger>
-                                                        <PopoverContent className="w-auto p-0">
-                                                            <Calendar mode="single" selected={new Date(bookIssue.returnDate)} disabled />
-                                                        </PopoverContent>
-                                                    </Popover>
-                                                </td>
+                        {history.IssueDetails && history.IssueDetails.length > 0 && (
+                            <div className='mt-4'>
+                                <div className='bg-[#F8F4EF] border-2 border-gray-300 rounded-xl shadow-2xl'>
+                                    <table className='w-full text-left'>
+                                        <thead className='bg-gray-200'>
+                                            <tr>
+                                                <th className='p-4 border-b'>Book No</th>
+                                                <th className='p-4 border-b'>Book Name</th>
+                                                <th className='p-4 border-b'>Issue Date</th>
+                                                <th className='p-4 border-b'>Return Date</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {history.IssueDetails
+                                                .sort((a, b) => new Date(b.bookIssueDate).getTime() - new Date(a.bookIssueDate).getTime())
+                                                .map((bookIssue, bookIssueIndex) => (
+                                                    <tr key={`${historyIndex}-${bookIssueIndex}`} className='border-b font-semibold'>
+                                                        <td className='p-4'>{bookIssue.bookNo}</td>
+                                                        <td className='p-4'>{bookIssue.bookName}</td>
+                                                        <td className='p-4'>
+                                                            <Popover>
+                                                                <PopoverTrigger asChild>
+                                                                    <span>
+                                                                        {bookIssue.bookIssueDate ? format(new Date(bookIssue.bookIssueDate), 'PPP') : 'Invalid Date'}
+                                                                    </span>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent className="w-auto p-0">
+                                                                    <Calendar mode="single" selected={new Date(bookIssue.bookIssueDate)} disabled />
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        </td>
+                                                        <td className='p-4'>
+                                                            <Popover>
+                                                                <PopoverTrigger asChild>
+                                                                    <span>
+                                                                        {bookIssue.returnDate ? format(new Date(bookIssue.returnDate), 'PPP') : 'Invalid Date'}
+                                                                    </span>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent className="w-auto p-0">
+                                                                    <Calendar mode="single" selected={new Date(bookIssue.returnDate)} disabled />
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        ));
+                        )}
+                    </CardContent>
+                </Card>
+            ));
     };
 
     return (
