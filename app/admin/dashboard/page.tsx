@@ -133,7 +133,7 @@ export default function DashBoard() {
                         {/* Vertical Navigation Bar */}
 
                         <div>
-                            <nav className={`fixed top-0 left-0 h-screen border-4 bg-[#F8F4EF] shadow-md transition-all duration-300 ${isNavOpen ? 'w-56' : 'w-16'}`}>
+                            <nav className={`fixed top-0 left-0 h-screen z-30 border-4 bg-[#F8F4EF] shadow-md transition-all duration-300 ${isNavOpen ? 'w-56' : 'w-16'}`}>
                                 <div className={`flex justify-center mt-20 transition-opacity duration-200 ${isNavOpen ? 'opacity-100' : 'opacity-0'}`}>
                                     <Image src="/logo.jpeg" width={100} height={100} alt="Logo" loading='lazy' />
                                 </div>

@@ -29,7 +29,6 @@ interface IStudentBookIssueHistory {
     studentDiv: string;
     IssueDetails: IBookIssue[]
     createAt: Date;
-
 }
 
 export default function History() {

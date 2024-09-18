@@ -42,27 +42,27 @@ export default function Home() {
                             className="w-full h-[60vh]">
                             <SwiperSlide>
                                 <div className="relative w-full h-full">
-                                    <Image src="/dashboard-corousal-1.jpg" alt="Image 1" layout="fill" objectFit="cover" priority />
+                                    <Image src="/dashboard-corousal-1.jpg" alt="Image 1" width={1200} height={675} className="object-cover w-full h-screen" priority />
                                 </div>
                             </SwiperSlide>
                             <SwiperSlide>
                                 <div className="relative w-full h-full">
-                                    <Image src="/dashboard-corousal-2.jpg" alt="Image 2" layout="fill" objectFit="cover" priority />
+                                    <Image src="/dashboard-corousal-2.jpg" alt="Image 2" width={1200} height={675} className="object-cover w-full h-screen" priority />
                                 </div>
                             </SwiperSlide>
                             <SwiperSlide>
                                 <div className="relative w-full h-full">
-                                    <Image src="/dashboard-corousal-3.jpg" alt="Image 3" layout="fill" objectFit="cover" priority />
+                                    <Image src="/dashboard-corousal-3.jpg" alt="Image 3" width={1200} height={675} className="object-cover w-full h-screen" priority />
                                 </div>
                             </SwiperSlide>
                             <SwiperSlide>
                                 <div className="relative w-full h-full">
-                                    <Image src="/dashboard-corousal-4.jpg" alt="Image 4" layout="fill" objectFit="cover" priority />
+                                    <Image src="/dashboard-corousal-4.jpg" alt="Image 4" width={1200} height={675} className="object-cover w-full h-screen" priority />
                                 </div>
                             </SwiperSlide>
                             <SwiperSlide>
                                 <div className="relative w-full h-[92vh]">
-                                    <Image src="/dashboard-corousal-5.jpg" alt="Image 5" layout="fill" objectFit="cover" priority />
+                                    <Image src="/dashboard-corousal-5.jpg" alt="Image 5" width={1200} height={675} className="object-cover w-full h-screen" priority />
                                 </div>
                             </SwiperSlide>
                         </Swiper>

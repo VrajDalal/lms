@@ -41,7 +41,8 @@ export default function Library() {
   const filteredBooks = tableData.filter(
     (book) =>
       book.bookName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.bookNo.toString().includes(searchQuery)  // Search by ID
+      book.bookNo.toString().includes(searchQuery) || // Search by ID
+      book.bookAuthorName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleToRetriveBookDatas = async () => {
