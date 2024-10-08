@@ -247,12 +247,8 @@ export default function IssueBook() {
                 }
             } else {
                 setLoading(false)
-                if (issueBookResult.message.includes("out of stock")) {
-                    toast.error(issueBookResult.message);
-                } else {
-                    toast.error('Failed to issue book');
+                toast.error('Book is out of stock');
                 }
-            }
         } catch (error) {
             setLoading(false)
             toast.error('An error occurred while issuing the book');

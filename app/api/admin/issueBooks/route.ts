@@ -39,7 +39,17 @@ export async function POST(req: NextRequest) {
         });
 
         for (let detail of formattedIssueDetails) {
+            const book = await AddBooksList.findOne({ bookNo: detail.bookNo });
 
+            if (!book) {
+                return NextResponse.json({ success: false, message: `Book with number ${detail.bookNo} not found` }, { status: 404 });
+            }
+
+            if (book.bookQty <= 0) {
+                return NextResponse.json({ success: false, message: `Book "${detail.bookName}" is not available` }, { status: 409 });
+            }
+
+            // Decrement book quantity
             await AddBooksList.updateOne(
                 { bookNo: detail.bookNo },
                 { $inc: { bookQty: -1 } } // Decrement the quantity
