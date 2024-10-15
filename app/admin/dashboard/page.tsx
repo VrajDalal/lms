@@ -122,11 +122,11 @@ export default function DashBoard() {
                                 <h1 className="text-2xl font-bold text-center flex-grow">Book Issue Hub</h1>
 
                                 {/* Right: Notification Icon */}
-                                <div className="flex items-center mr-10">
+                                {/* <div className="flex items-center mr-10">
                                     <button onClick={() => console.log("Notification icon clicked")} className="focus:outline-none">
                                         <Bell />
                                     </button>
-                                </div>
+                                </div> */}
                             </div>
                         </nav>
 

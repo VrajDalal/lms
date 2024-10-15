@@ -37,7 +37,7 @@ export default function Library() {
     const [filteredBooks, setFilteredBooks] = useState<IAvailableBooks[]>([]);
     const [isUpdateBookModalOpen, setIsUpdateBookModalOpen] = useState(false)
     const [selectedBook, setSelectedBook] = useState<IAvailableBooks | null>(null);
-
+    const [currentPage, setCurrentPage] = useState(1);
 
     const router = useRouter()
     const addSingleBookRef = useRef<HTMLDialogElement>(null);
@@ -335,14 +335,33 @@ export default function Library() {
         }
     }
 
+
+
     //in library section add manually books and save into table also (CRUD operation ,edit quantity,delete books)
     //if not book data than show drag option else show buttons : done
     //in search book no,name,author on keyup event : done
     //on click of bookno can do PATCH or update the book details in which all fields want to update
     //in row end put delete for remove the book : Done
-    //if student issue a book than also update the qty
+    //if student issue a book than also update the qty: Done
 
     const displayBooks = searchBookDetails ? filteredBooks : tableData;
+    const booksPerPage = 10;
+    const indexOfLastBook = currentPage * booksPerPage;
+    const indexOfFirstBook = indexOfLastBook - booksPerPage;
+    const currentBooks = displayBooks.slice(indexOfFirstBook, indexOfLastBook);
+
+    // Handle the page changes
+    const handleNextPage = () => {
+        if (currentPage < Math.ceil(displayBooks.length / booksPerPage)) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     return (
         <>
@@ -592,7 +611,7 @@ export default function Library() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-300">
-                                                {displayBooks
+                                                {currentBooks
                                                     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                                                     .map((bookDetails) => (
                                                         <tr key={bookDetails.bookNo} className="hover:bg-gray-300">
@@ -615,6 +634,22 @@ export default function Library() {
                                                     ))}
                                             </tbody>
                                         </table>
+                                        <div className="flex justify-end p-4 space-x-2">
+                                            <Button
+                                                onClick={handlePrevPage}
+                                                disabled={currentPage === 1}
+                                                className={`px-4 py-2 rounded ${currentPage === 1 ? 'bg-gray-400' : 'bg-black text-white'}`}
+                                            >
+                                                Previous
+                                            </Button>
+                                            <Button
+                                                onClick={handleNextPage}
+                                                disabled={currentPage === Math.ceil(displayBooks.length / booksPerPage)}
+                                                className={`px-4 py-2 rounded ${currentPage === Math.ceil(displayBooks.length / booksPerPage) ? 'bg-gray-400' : 'bg-black text-white'}`}
+                                            >
+                                                Next
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
